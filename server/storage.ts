@@ -411,7 +411,10 @@ export async function initStorage(): Promise<void> {
   if (process.env.DATABASE_URL) {
     // Create tables if they don't exist
     const pg = await import("pg");
-    const pool = new pg.default.Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = new pg.default.Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    });
     await pool.query(`
       CREATE TABLE IF NOT EXISTS games (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

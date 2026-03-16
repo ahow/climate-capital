@@ -16,7 +16,10 @@ import {
   MAX_POSITION_PCT,
 } from "@shared/gameData";
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : undefined,
+});
 const db = drizzle(pool);
 
 function generateCode(): string {
