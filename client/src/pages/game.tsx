@@ -7,7 +7,8 @@ import {
   ChevronRight, Trophy, Shield, Flame, AlertTriangle, Search,
   RefreshCw, ArrowLeft, Leaf, Check, X, Info,
 } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -985,19 +986,39 @@ function FinishedPhase({
     },
   });
 
-  // Build chart data from valueHistory
+  const { data: benchmark } = useQuery<number[]>({
+    queryKey: ["/api/benchmark"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/benchmark");
+      return res.json();
+    },
+  });
+
+  // Build chart data from valueHistory + benchmark
   const chartData = useMemo(() => {
-    const data = [{ round: 0, value: 100_000_000 }];
+    const data: { round: number; value: number; benchmark?: number }[] = [
+      { round: 0, value: 100_000_000, benchmark: benchmark?.[0] ?? 100_000_000 },
+    ];
     for (let i = 0; i < player.valueHistory.length; i++) {
-      data.push({ round: i + 1, value: player.valueHistory[i] });
+      data.push({
+        round: i + 1,
+        value: player.valueHistory[i],
+        benchmark: benchmark?.[i + 1],
+      });
     }
     return data;
-  }, [player.valueHistory]);
+  }, [player.valueHistory, benchmark]);
 
   const finalValue = player.valueHistory.length > 0
     ? player.valueHistory[player.valueHistory.length - 1]
     : getPortfolioValue(player, assets, game.currentRound);
-  const totalReturn = ((finalValue - 100_000_000) / 100_000_000) * 100;
+
+  const startingValue = 100_000_000;
+  const years = 10; // 2015-2025
+  const portfolioCAGR = Math.pow(finalValue / startingValue, 1 / years) - 1;
+  const finalBenchmark = benchmark?.[benchmark.length - 1] ?? startingValue;
+  const benchmarkCAGR = Math.pow(finalBenchmark / startingValue, 1 / years) - 1;
+  const annualisedOutperformance = portfolioCAGR - benchmarkCAGR;
 
   return (
     <motion.div
@@ -1007,10 +1028,13 @@ function FinishedPhase({
       <div className="text-center space-y-2 pt-4">
         <h2 className="text-4xl font-bold">Game Over</h2>
         <p className="text-muted-foreground">2015 &ndash; 2025: A decade of climate investing</p>
-        <div className="flex items-center justify-center gap-4 pt-2">
+        <div className="flex flex-col items-center gap-1 pt-2">
           <span className="text-3xl font-mono font-bold text-primary">{formatMoney(finalValue)}</span>
-          <span className={`text-xl font-semibold ${totalReturn >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            {totalReturn >= 0 ? "+" : ""}{totalReturn.toFixed(1)}%
+          <span className={`text-xl font-semibold ${annualisedOutperformance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+            {annualisedOutperformance >= 0 ? "+" : ""}{(annualisedOutperformance * 100).toFixed(1)}% p.a. vs benchmark
+          </span>
+          <span className="text-sm text-muted-foreground">
+            Portfolio CAGR: {(portfolioCAGR * 100).toFixed(1)}% | Benchmark CAGR: {(benchmarkCAGR * 100).toFixed(1)}%
           </span>
         </div>
       </div>
@@ -1027,52 +1051,24 @@ function FinishedPhase({
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="round" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} tickFormatter={(v) => `R${v}`} />
                 <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} tickFormatter={(v) => `$${(v / 1_000_000).toFixed(0)}M`} />
-                <Tooltip
+                <RechartsTooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "8px",
                     color: "hsl(var(--foreground))",
                   }}
-                  formatter={(value: number) => [formatMoney(value), "Value"]}
+                  formatter={(value: number, name: string) => [formatMoney(value), name === "benchmark" ? "Benchmark" : "Your Portfolio"]}
                   labelFormatter={(label) => `Round ${label}`}
                 />
-                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--primary))" }} />
+                <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--primary))" }} name="Your Portfolio" />
+                <Line type="monotone" dataKey="benchmark" stroke="hsl(var(--muted-foreground))" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 3, fill: "hsl(var(--muted-foreground))" }} name="Benchmark" />
+                <Legend />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
-
-      {/* Awards */}
-      {awards && awards.length > 0 && (
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">Awards</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {awards.map((award) => {
-                const IconComp = AWARD_ICONS[award.icon] || Trophy;
-                const isMe = award.winnerId === player.id;
-                return (
-                  <div
-                    key={award.awardId}
-                    className={`p-3 rounded-lg border ${isMe ? "border-primary/40 bg-primary/5" : "border-border/50"}`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <IconComp className={`h-4 w-4 ${isMe ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className="font-semibold text-sm">{award.name}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-1.5">{award.description}</p>
-                    <p className="text-xs font-medium text-primary">{award.winnerName}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Final Leaderboard */}
       {leaderboard && leaderboard.length > 0 && (
@@ -1083,7 +1079,9 @@ function FinishedPhase({
           <CardContent>
             <div className="space-y-1">
               {leaderboard.map((entry) => {
-                const returnPct = ((entry.totalValue - 100_000_000) / 100_000_000) * 100;
+                const entryCAGR = Math.pow(entry.totalValue / startingValue, 1 / years) - 1;
+                const entryOutperformance = entryCAGR - benchmarkCAGR;
+                const playerAwards = awards?.filter((a) => a.winnerId === entry.playerId) ?? [];
                 return (
                   <div
                     key={entry.playerId}
@@ -1096,10 +1094,30 @@ function FinishedPhase({
                         {entry.rank <= 3 ? ["🥇", "🥈", "🥉"][entry.rank - 1] : `#${entry.rank}`}
                       </span>
                       <span className="font-medium">{entry.name}</span>
+                      {playerAwards.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          {playerAwards.map((award) => {
+                            const IconComp = AWARD_ICONS[award.icon] || Trophy;
+                            return (
+                              <Tooltip key={award.awardId}>
+                                <TooltipTrigger asChild>
+                                  <span className="cursor-help">
+                                    <IconComp className="h-3.5 w-3.5 text-muted-foreground hover:text-primary transition-colors" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="font-semibold">{award.name}</p>
+                                  <p className="text-xs text-muted-foreground">{award.description}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className={`text-sm ${returnPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                        {returnPct >= 0 ? "+" : ""}{returnPct.toFixed(1)}%
+                      <span className={`text-sm ${entryOutperformance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        {entryOutperformance >= 0 ? "+" : ""}{(entryOutperformance * 100).toFixed(1)}% p.a.
                       </span>
                       <span className="font-mono font-semibold w-24 text-right">{formatMoney(entry.totalValue)}</span>
                     </div>

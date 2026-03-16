@@ -49,6 +49,7 @@ export interface PlayerPortfolio {
 export interface PlayerState {
   id: string;
   name: string;
+  email: string;
   currentRound: number;
   portfolio: PlayerPortfolio;
   // Value history: total portfolio value at end of each completed round
@@ -60,7 +61,6 @@ export interface PlayerState {
 export interface GameSession {
   id: string;
   code: string; // 6-char join code
-  hostName: string;
   status: "lobby" | "briefing" | "trading" | "results" | "takeaways" | "finished";
   currentRound: number;
   maxRounds: number;
@@ -68,20 +68,13 @@ export interface GameSession {
   createdAt: number;
   // Facilitator-paced: when the current phase timer expires
   phaseDeadline: number | null;
-  mode: "facilitator" | "self-paced";
 }
 
 // ── Zod schemas for API validation ──
 
-export const joinGameSchema = z.object({
-  code: z.string().min(4).max(8),
+export const joinSchema = z.object({
   playerName: z.string().min(1).max(30),
-});
-
-export const createGameSchema = z.object({
-  hostName: z.string().min(1).max(30),
-  maxRounds: z.number().min(5).max(8).default(8),
-  mode: z.enum(["facilitator", "self-paced"]).default("self-paced"),
+  email: z.string().email(),
 });
 
 export const tradeSchema = z.object({
@@ -94,7 +87,6 @@ export const submitTradesSchema = z.object({
   trades: z.array(tradeSchema),
 });
 
-export type JoinGame = z.infer<typeof joinGameSchema>;
-export type CreateGame = z.infer<typeof createGameSchema>;
+export type JoinData = z.infer<typeof joinSchema>;
 export type Trade = z.infer<typeof tradeSchema>;
 export type SubmitTrades = z.infer<typeof submitTradesSchema>;

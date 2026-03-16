@@ -1,16 +1,23 @@
 import { randomUUID } from "crypto";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { eq, and } from "drizzle-orm";
+import pg from "pg";
+import { games, players } from "@shared/dbSchema";
+import type { IStorage } from "./storage";
 import type {
   GameSession,
   PlayerState,
-  Holding,
   Trade,
+  Holding,
 } from "@shared/schema";
 import {
   GAME_ASSETS,
   STARTING_CASH,
   MAX_POSITION_PCT,
-  AWARDS,
 } from "@shared/gameData";
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const db = drizzle(pool);
 
 function generateCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -40,96 +47,148 @@ function portfolioValue(player: PlayerState, round: number): number {
   return total;
 }
 
-export interface IStorage {
-  getOrCreateGame(): Promise<GameSession>;
-  getGame(id: string): Promise<GameSession | undefined>;
-  getGameByCode(code: string): Promise<GameSession | undefined>;
-  joinGame(gameId: string, playerName: string, email: string): Promise<PlayerState>;
-  findPlayerByEmail(gameId: string, email: string): Promise<PlayerState | undefined>;
-  getPlayer(gameId: string, playerId: string): Promise<PlayerState | undefined>;
-  submitTrades(gameId: string, playerId: string, trades: Trade[]): Promise<PlayerState>;
-  advanceRound(gameId: string): Promise<GameSession>;
-  setPhase(gameId: string, phase: GameSession["status"]): Promise<GameSession>;
-  getLeaderboard(
-    gameId: string,
-  ): Promise<{ playerId: string; name: string; totalValue: number; rank: number }[]>;
-  calculateAwards(
-    gameId: string,
-  ): Promise<Record<string, { playerId: string; playerName: string; value: number }>>;
+function rowToPlayer(row: typeof players.$inferSelect): PlayerState {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    currentRound: row.currentRound,
+    portfolio: row.portfolio as PlayerState["portfolio"],
+    valueHistory: (row.valueHistory ?? []) as number[],
+    predictions: (row.predictions ?? []) as PlayerState["predictions"],
+  };
 }
 
-export class MemStorage implements IStorage {
-  private games: Map<string, GameSession> = new Map();
+async function buildGameSession(
+  gameRow: typeof games.$inferSelect,
+): Promise<GameSession> {
+  const playerRows = await db
+    .select()
+    .from(players)
+    .where(eq(players.gameId, gameRow.id));
 
+  const playersMap: Record<string, PlayerState> = {};
+  for (const row of playerRows) {
+    const p = rowToPlayer(row);
+    playersMap[p.id] = p;
+  }
+
+  return {
+    id: gameRow.id,
+    code: gameRow.code,
+    status: gameRow.status as GameSession["status"],
+    currentRound: gameRow.currentRound,
+    maxRounds: gameRow.maxRounds,
+    players: playersMap,
+    createdAt: gameRow.createdAt.getTime(),
+    phaseDeadline: gameRow.phaseDeadline?.getTime() ?? null,
+  };
+}
+
+export class DbStorage implements IStorage {
   async getOrCreateGame(): Promise<GameSession> {
-    // Return first non-finished game, or create a new one
-    for (const game of Array.from(this.games.values())) {
-      if (game.status !== "finished") return game;
+    // Find first non-finished game
+    const rows = await db
+      .select()
+      .from(games)
+      .where(eq(games.status, "lobby"))
+      .limit(1);
+
+    if (rows.length === 0) {
+      // Also check for in-progress games
+      const allGames = await db.select().from(games);
+      const activeGame = allGames.find((g) => g.status !== "finished");
+      if (activeGame) return buildGameSession(activeGame);
+
+      // Create new game
+      const code = generateCode();
+      const [newGame] = await db
+        .insert(games)
+        .values({ code, status: "lobby", currentRound: 1, maxRounds: 8 })
+        .returning();
+      return buildGameSession(newGame);
     }
-    const id = randomUUID();
-    let code = generateCode();
-    while (Array.from(this.games.values()).some((g) => g.code === code)) {
-      code = generateCode();
-    }
-    const game: GameSession = {
-      id,
-      code,
-      status: "lobby",
-      currentRound: 1,
-      maxRounds: 8,
-      players: {},
-      createdAt: Date.now(),
-      phaseDeadline: null,
-    };
-    this.games.set(id, game);
-    return game;
+
+    return buildGameSession(rows[0]);
   }
 
   async getGame(id: string): Promise<GameSession | undefined> {
-    return this.games.get(id);
+    const rows = await db.select().from(games).where(eq(games.id, id)).limit(1);
+    if (rows.length === 0) return undefined;
+    return buildGameSession(rows[0]);
   }
 
   async getGameByCode(code: string): Promise<GameSession | undefined> {
-    return Array.from(this.games.values()).find(
-      (g) => g.code === code.toUpperCase(),
-    );
+    const rows = await db
+      .select()
+      .from(games)
+      .where(eq(games.code, code.toUpperCase()))
+      .limit(1);
+    if (rows.length === 0) return undefined;
+    return buildGameSession(rows[0]);
   }
 
-  async findPlayerByEmail(gameId: string, email: string): Promise<PlayerState | undefined> {
-    const game = this.games.get(gameId);
-    if (!game) return undefined;
-    return Object.values(game.players).find((p) => p.email === email);
+  async findPlayerByEmail(
+    gameId: string,
+    email: string,
+  ): Promise<PlayerState | undefined> {
+    const rows = await db
+      .select()
+      .from(players)
+      .where(and(eq(players.gameId, gameId), eq(players.email, email)))
+      .limit(1);
+    if (rows.length === 0) return undefined;
+    return rowToPlayer(rows[0]);
   }
 
-  async joinGame(gameId: string, playerName: string, email: string): Promise<PlayerState> {
-    const game = this.games.get(gameId);
-    if (!game) throw new Error("Game not found");
+  async joinGame(
+    gameId: string,
+    playerName: string,
+    email: string,
+  ): Promise<PlayerState> {
+    const gameRows = await db
+      .select()
+      .from(games)
+      .where(eq(games.id, gameId))
+      .limit(1);
+    if (gameRows.length === 0) throw new Error("Game not found");
+    const game = gameRows[0];
 
-    const id = randomUUID();
-    const player: PlayerState = {
-      id,
-      name: playerName,
-      email,
-      currentRound: game.currentRound,
-      portfolio: {
-        cash: STARTING_CASH,
-        holdings: [],
-      },
-      valueHistory: [],
-      predictions: [],
-    };
-    game.players[id] = player;
-    return player;
+    const [row] = await db
+      .insert(players)
+      .values({
+        gameId,
+        name: playerName,
+        email,
+        currentRound: game.currentRound,
+        portfolio: { cash: STARTING_CASH, holdings: [] },
+        valueHistory: [],
+        predictions: [],
+      })
+      .returning();
+
+    return rowToPlayer(row);
   }
 
-  async getPlayer(gameId: string, playerId: string): Promise<PlayerState | undefined> {
-    const game = this.games.get(gameId);
-    if (!game) return undefined;
-    return game.players[playerId];
+  async getPlayer(
+    gameId: string,
+    playerId: string,
+  ): Promise<PlayerState | undefined> {
+    const rows = await db
+      .select()
+      .from(players)
+      .where(and(eq(players.gameId, gameId), eq(players.id, playerId)))
+      .limit(1);
+    if (rows.length === 0) return undefined;
+    return rowToPlayer(rows[0]);
   }
 
-  async submitTrades(gameId: string, playerId: string, trades: Trade[]): Promise<PlayerState> {
-    const game = this.games.get(gameId);
+  async submitTrades(
+    gameId: string,
+    playerId: string,
+    trades: Trade[],
+  ): Promise<PlayerState> {
+    const game = await this.getGame(gameId);
     if (!game) throw new Error("Game not found");
     const player = game.players[playerId];
     if (!player) throw new Error("Player not found");
@@ -181,9 +240,7 @@ export class MemStorage implements IStorage {
         const holding = player.portfolio.holdings.find(
           (h) => h.assetId === trade.assetId,
         );
-        if (!holding) {
-          throw new Error(`No holding for asset: ${trade.assetId}`);
-        }
+        if (!holding) throw new Error(`No holding for asset: ${trade.assetId}`);
 
         if (round < holding.lockedUntilRound) {
           throw new Error(
@@ -210,44 +267,68 @@ export class MemStorage implements IStorage {
       }
     }
 
+    // Persist updated player
+    await db
+      .update(players)
+      .set({
+        portfolio: player.portfolio,
+      })
+      .where(eq(players.id, playerId));
+
     return player;
   }
 
   async advanceRound(gameId: string): Promise<GameSession> {
-    const game = this.games.get(gameId);
+    const game = await this.getGame(gameId);
     if (!game) throw new Error("Game not found");
 
     for (const player of Object.values(game.players)) {
       const value = portfolioValue(player, game.currentRound);
       player.valueHistory.push(value);
+      player.currentRound = game.currentRound + 1;
+
+      await db
+        .update(players)
+        .set({
+          valueHistory: player.valueHistory,
+          currentRound: player.currentRound,
+        })
+        .where(eq(players.id, player.id));
     }
 
-    game.currentRound += 1;
+    const newRound = game.currentRound + 1;
+    const newStatus = newRound > game.maxRounds ? "finished" : "briefing";
 
-    for (const player of Object.values(game.players)) {
-      player.currentRound = game.currentRound;
-    }
+    await db
+      .update(games)
+      .set({ currentRound: newRound, status: newStatus })
+      .where(eq(games.id, gameId));
 
-    if (game.currentRound > game.maxRounds) {
-      game.status = "finished";
-    } else {
-      game.status = "briefing";
-    }
-
+    game.currentRound = newRound;
+    game.status = newStatus as GameSession["status"];
     return game;
   }
 
-  async setPhase(gameId: string, phase: GameSession["status"]): Promise<GameSession> {
-    const game = this.games.get(gameId);
+  async setPhase(
+    gameId: string,
+    phase: GameSession["status"],
+  ): Promise<GameSession> {
+    await db
+      .update(games)
+      .set({ status: phase })
+      .where(eq(games.id, gameId));
+
+    const game = await this.getGame(gameId);
     if (!game) throw new Error("Game not found");
-    game.status = phase;
     return game;
   }
 
   async getLeaderboard(
     gameId: string,
-  ): Promise<{ playerId: string; name: string; totalValue: number; rank: number }[]> {
-    const game = this.games.get(gameId);
+  ): Promise<
+    { playerId: string; name: string; totalValue: number; rank: number }[]
+  > {
+    const game = await this.getGame(gameId);
     if (!game) throw new Error("Game not found");
 
     const entries = Object.values(game.players).map((player) => ({
@@ -257,18 +338,19 @@ export class MemStorage implements IStorage {
     }));
 
     entries.sort((a, b) => b.totalValue - a.totalValue);
-
     return entries.map((e, i) => ({ ...e, rank: i + 1 }));
   }
 
   async calculateAwards(
     gameId: string,
-  ): Promise<Record<string, { playerId: string; playerName: string; value: number }>> {
-    const game = this.games.get(gameId);
+  ): Promise<
+    Record<string, { playerId: string; playerName: string; value: number }>
+  > {
+    const game = await this.getGame(gameId);
     if (!game) throw new Error("Game not found");
 
-    const players = Object.values(game.players);
-    if (players.length === 0) return {};
+    const playersList = Object.values(game.players);
+    if (playersList.length === 0) return {};
 
     const round = game.currentRound;
     const awards: Record<
@@ -278,7 +360,7 @@ export class MemStorage implements IStorage {
 
     const totalVal = (p: PlayerState) => portfolioValue(p, round);
 
-    const champion = players.reduce((best, p) =>
+    const champion = playersList.reduce((best, p) =>
       totalVal(p) > totalVal(best) ? p : best,
     );
     awards["champion"] = {
@@ -287,7 +369,7 @@ export class MemStorage implements IStorage {
       value: totalVal(champion),
     };
 
-    const alpha = players.reduce((best, p) =>
+    const alpha = playersList.reduce((best, p) =>
       totalVal(p) > totalVal(best) ? p : best,
     );
     awards["alpha"] = {
@@ -297,12 +379,14 @@ export class MemStorage implements IStorage {
     };
 
     const fossilIds = new Set(["titan", "appcoal"]);
-    const fossilReturn = (p: PlayerState) => {
-      return p.portfolio.holdings
+    const fossilReturn = (p: PlayerState) =>
+      p.portfolio.holdings
         .filter((h) => fossilIds.has(h.assetId))
-        .reduce((sum, h) => sum + h.units * getAssetPrice(h.assetId, round), 0);
-    };
-    const baron = players.reduce((best, p) =>
+        .reduce(
+          (sum, h) => sum + h.units * getAssetPrice(h.assetId, round),
+          0,
+        );
+    const baron = playersList.reduce((best, p) =>
       fossilReturn(p) > fossilReturn(best) ? p : best,
     );
     awards["baron"] = {
@@ -312,8 +396,8 @@ export class MemStorage implements IStorage {
     };
 
     let worstLoss = 0;
-    let strandedPlayer = players[0];
-    for (const p of players) {
+    let strandedPlayer = playersList[0];
+    for (const p of playersList) {
       for (const h of p.portfolio.holdings) {
         const asset = GAME_ASSETS.find((a) => a.id === h.assetId)!;
         const purchasePrice =
@@ -334,9 +418,9 @@ export class MemStorage implements IStorage {
       value: worstLoss,
     };
 
-    let bestSteady = players[0];
+    let bestSteady = playersList[0];
     let bestSteadyScore = -Infinity;
-    for (const p of players) {
+    for (const p of playersList) {
       const ret = totalVal(p) - STARTING_CASH;
       if (ret <= 0 || p.valueHistory.length < 2) continue;
       const mean =
@@ -358,12 +442,14 @@ export class MemStorage implements IStorage {
     };
 
     const goodCarbonIds = new Set(["eucarbon", "vcm-premium"]);
-    const carbonReturn = (p: PlayerState) => {
-      return p.portfolio.holdings
+    const carbonReturn = (p: PlayerState) =>
+      p.portfolio.holdings
         .filter((h) => goodCarbonIds.has(h.assetId))
-        .reduce((sum, h) => sum + h.units * getAssetPrice(h.assetId, round), 0);
-    };
-    const greenwash = players.reduce((best, p) =>
+        .reduce(
+          (sum, h) => sum + h.units * getAssetPrice(h.assetId, round),
+          0,
+        );
+    const greenwash = playersList.reduce((best, p) =>
       carbonReturn(p) > carbonReturn(best) ? p : best,
     );
     awards["greenwash"] = {
@@ -372,9 +458,9 @@ export class MemStorage implements IStorage {
       value: carbonReturn(greenwash),
     };
 
-    let bestContrarian = players[0];
+    let bestContrarian = playersList[0];
     let bestContrarianReturn = 0;
-    for (const p of players) {
+    for (const p of playersList) {
       let contReturn = 0;
       for (const h of p.portfolio.holdings) {
         const asset = GAME_ASSETS.find((a) => a.id === h.assetId)!;
@@ -403,15 +489,3 @@ export class MemStorage implements IStorage {
     return awards;
   }
 }
-
-// Conditionally export DbStorage or MemStorage
-let storage: IStorage = new MemStorage();
-
-export async function initStorage(): Promise<void> {
-  if (process.env.DATABASE_URL) {
-    const { DbStorage } = await import("./dbStorage");
-    storage = new DbStorage();
-  }
-}
-
-export { storage };
