@@ -409,8 +409,37 @@ let storage: IStorage = new MemStorage();
 
 export async function initStorage(): Promise<void> {
   if (process.env.DATABASE_URL) {
+    // Create tables if they don't exist
+    const pg = await import("pg");
+    const pool = new pg.default.Pool({ connectionString: process.env.DATABASE_URL });
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS games (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        code VARCHAR(8) NOT NULL UNIQUE,
+        status VARCHAR(20) NOT NULL DEFAULT 'lobby',
+        current_round INTEGER NOT NULL DEFAULT 1,
+        max_rounds INTEGER NOT NULL DEFAULT 8,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        phase_deadline TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS players (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        game_id UUID NOT NULL REFERENCES games(id),
+        name VARCHAR(30) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        current_round INTEGER NOT NULL DEFAULT 1,
+        portfolio JSONB NOT NULL,
+        value_history JSONB NOT NULL DEFAULT '[]'::jsonb,
+        predictions JSONB NOT NULL DEFAULT '[]'::jsonb
+      );
+    `);
+    await pool.end();
+
     const { DbStorage } = await import("./dbStorage");
     storage = new DbStorage();
+    console.log("Using PostgreSQL storage");
+  } else {
+    console.log("No DATABASE_URL set, using in-memory storage");
   }
 }
 
