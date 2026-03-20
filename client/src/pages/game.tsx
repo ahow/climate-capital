@@ -177,6 +177,17 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
             <BriefingPhase
               key="briefing"
               round={round}
+              onContinue={() => phaseMutation.mutate("research")}
+            />
+          )}
+          {phase === "research" && (
+            <ResearchPhase
+              key="research"
+              game={game}
+              gameId={gameId}
+              playerId={playerId}
+              assets={assets}
+              round={round}
               onContinue={() => phaseMutation.mutate("trading")}
             />
           )}
@@ -724,6 +735,162 @@ function TradingPhase({
   );
 }
 
+// ── Research Phase ──
+
+interface ResearchMessage {
+  role: "user" | "analyst";
+  content: string;
+}
+
+function ResearchPhase({
+  game, gameId, playerId, assets, round, onContinue,
+}: {
+  game: GameSession; gameId: string; playerId: string;
+  assets: GameAsset[]; round: number; onContinue: () => void;
+}) {
+  const { toast } = useToast();
+  const [question, setQuestion] = useState("");
+  const [selectedAssetId, setSelectedAssetId] = useState<string>("");
+  const [messages, setMessages] = useState<ResearchMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
+  const MAX_QUESTIONS = 5;
+
+  async function askAnalyst() {
+    if (!question.trim() || isLoading || questionCount >= MAX_QUESTIONS) return;
+    const q = question.trim();
+    setQuestion("");
+    setMessages((prev) => [...prev, { role: "user", content: q }]);
+    setIsLoading(true);
+    setQuestionCount((c) => c + 1);
+
+    try {
+      const body: { playerId: string; question: string; assetId?: string } = { playerId, question: q };
+      if (selectedAssetId) body.assetId = selectedAssetId;
+      const res = await apiRequest("POST", `/api/games/${gameId}/research`, body);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Request failed");
+      setMessages((prev) => [...prev, { role: "analyst", content: data.answer }]);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+      setMessages((prev) => [...prev, { role: "analyst", content: "The analyst is unavailable right now. Please try again or proceed to trading." }]);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const { data: briefing } = useQuery<{ round: number; title: string; period: string }>({ 
+    queryKey: ["/api/rounds", round, "briefing"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/rounds/${round}/briefing`);
+      return res.json();
+    },
+  });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="max-w-3xl mx-auto p-8 space-y-6"
+    >
+      <div className="text-center space-y-1 pt-4">
+        <Badge variant="outline" className="text-xs mb-2">Round {round}</Badge>
+        <h2 className="text-3xl font-bold">Research Desk</h2>
+        {briefing && <p className="text-muted-foreground">{briefing.period}</p>}
+        <p className="text-sm text-muted-foreground">Ask our AI analyst about any investment before you trade</p>
+      </div>
+
+      {/* Chat history */}
+      {messages.length > 0 && (
+        <div className="space-y-3 max-h-96 overflow-y-auto">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex gap-3 ${ msg.role === "user" ? "justify-end" : "justify-start" }`}>
+              {msg.role === "analyst" && (
+                <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                  <Search className="h-3.5 w-3.5 text-primary" />
+                </div>
+              )}
+              <div className={`max-w-[85%] rounded-lg p-3 text-sm leading-relaxed ${
+                msg.role === "user"
+                  ? "bg-primary/20 text-foreground ml-auto"
+                  : "bg-card border border-border/50 text-foreground"
+              }`}>
+                {msg.content}
+              </div>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex gap-3 justify-start">
+              <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <Search className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <div className="bg-card border border-border/50 rounded-lg p-3 text-sm text-muted-foreground">
+                <span className="animate-pulse">Analyst is researching...</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Input area */}
+      <Card className="border-border/50">
+        <CardContent className="pt-4 space-y-3">
+          {/* Asset selector */}
+          <div className="space-y-1.5">
+            <label className="text-xs text-muted-foreground uppercase tracking-wider">Focus on asset (optional)</label>
+            <select
+              value={selectedAssetId}
+              onChange={(e) => setSelectedAssetId(e.target.value)}
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">Any / General market question</option>
+              {assets.map((a) => (
+                <option key={a.id} value={a.id}>{a.name} ({a.sector})</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Question input */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between">
+              <label className="text-xs text-muted-foreground uppercase tracking-wider">Your question</label>
+              <span className="text-xs text-muted-foreground">{question.length}/500 • {questionCount}/{MAX_QUESTIONS} questions used</span>
+            </div>
+            <textarea
+              value={question}
+              onChange={(e) => setQuestion(e.target.value.slice(0, 500))}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askAnalyst(); } }}
+              placeholder="e.g. What are the key risks for ElectraDrive this period? What macro trends should I be aware of?"
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary min-h-[80px]"
+              disabled={isLoading || questionCount >= MAX_QUESTIONS}
+            />
+          </div>
+
+          {questionCount >= MAX_QUESTIONS && (
+            <p className="text-xs text-yellow-500 flex items-center gap-1">
+              <Info className="h-3.5 w-3.5" />
+              Maximum questions reached for this round.
+            </p>
+          )}
+
+          <Button
+            onClick={askAnalyst}
+            disabled={!question.trim() || isLoading || questionCount >= MAX_QUESTIONS}
+            className="w-full"
+          >
+            {isLoading ? "Asking analyst..." : <><Search className="h-4 w-4 mr-2" />Ask Analyst</>}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-center pt-2">
+        <Button data-testid="proceed-to-trading-btn" size="lg" onClick={onContinue} className="gap-2">
+          Proceed to Trading <BarChart3 className="h-4 w-4" />
+        </Button>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Results Phase ──
 
 function ResultsPhase({
@@ -740,12 +907,25 @@ function ResultsPhase({
     },
   });
 
+  const { data: benchmark } = useQuery<number[]>({
+    queryKey: ["/api/benchmark"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/benchmark");
+      return res.json();
+    },
+  });
+
   const portfolioValue = getPortfolioValue(player, assets, round);
   const prevValue = player.valueHistory.length > 0
     ? player.valueHistory[player.valueHistory.length - 1]
     : 100_000_000;
   const changeValue = portfolioValue - prevValue;
   const changePct = (changeValue / prevValue) * 100;
+
+  // Benchmark value for this round (benchmark[round] = end of round N)
+  const benchmarkValue = benchmark?.[round];
+  const benchmarkPct = benchmarkValue ? ((benchmarkValue - 100_000_000) / 100_000_000) * 100 : null;
+  const vsbenchmark = benchmarkValue ? portfolioValue - benchmarkValue : null;
 
   return (
     <motion.div
@@ -754,12 +934,25 @@ function ResultsPhase({
     >
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold">Round {round} Results</h2>
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
           <span className="text-2xl font-mono font-bold text-primary">{formatMoney(portfolioValue)}</span>
           <span className={`text-lg font-semibold ${changeValue >= 0 ? "text-emerald-400" : "text-red-400"}`}>
             {changeValue >= 0 ? "+" : ""}{formatMoney(changeValue)} ({changePct >= 0 ? "+" : ""}{changePct.toFixed(1)}%)
           </span>
         </div>
+        {benchmarkValue != null && benchmarkPct !== null && (
+          <div className="flex items-center justify-center gap-3 text-sm flex-wrap pt-1">
+            <span className="text-muted-foreground">
+              Benchmark: <span className="font-mono font-semibold text-foreground">{formatMoney(benchmarkValue)}</span>
+              <span className="ml-1 text-muted-foreground">({benchmarkPct >= 0 ? "+" : ""}{benchmarkPct.toFixed(1)}% from start)</span>
+            </span>
+            {vsbenchmark !== null && (
+              <span className={`font-semibold ${vsbenchmark >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                {vsbenchmark >= 0 ? "▲ Beating" : "▼ Behind"} benchmark by {formatMoney(Math.abs(vsbenchmark))}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Holdings breakdown */}

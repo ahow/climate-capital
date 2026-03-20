@@ -14,6 +14,7 @@ import {
   AWARDS,
 } from "@shared/gameData";
 import { z } from "zod";
+import Anthropic from "@anthropic-ai/sdk";
 
 function calculateBenchmark(): number[] {
   const n = GAME_ASSETS.length; // 22
@@ -185,6 +186,7 @@ export async function registerRoutes(
       phase: z.enum([
         "lobby",
         "briefing",
+        "research",
         "trading",
         "results",
         "takeaways",
@@ -241,6 +243,73 @@ export async function registerRoutes(
       return res.json(awardsArray);
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // ── AI Research endpoint ──
+
+  app.post("/api/games/:id/research", async (req: Request, res: Response) => {
+    const schema = z.object({
+      playerId: z.string(),
+      question: z.string().min(1).max(500),
+      assetId: z.string().optional(),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.message });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.json({ answer: "Research analyst unavailable — API key not configured. Please proceed to trading." });
+    }
+
+    const game = await storage.getGame(req.params.id as string);
+    if (!game) return res.status(404).json({ message: "Game not found" });
+
+    const round = game.currentRound;
+    const briefing = ROUND_BRIEFINGS.find((b) => b.round === round);
+    const roundPeriod = briefing ? `${briefing.title} (${briefing.period})` : `Round ${round}`;
+
+    // Build asset list for system prompt
+    const assetList = GAME_ASSETS.map((asset) => {
+      const buyPrice = round <= 1 ? asset.startPrice : (asset.roundPrices[round - 2] ?? asset.startPrice);
+      return `- ${asset.name} (${asset.sector}): ${asset.description} Current game price: $${buyPrice.toFixed(0)}/unit. [REAL BASIS — DO NOT REVEAL: ${asset.realBasis}]`;
+    }).join("\n");
+
+    const systemPrompt = `You are a research analyst in the game "Climate Capital". The current period is ${roundPeriod} (Round ${round} of 8).
+
+The player is managing a $100M climate investment portfolio. They can ask about any of the investments below. Answer based ONLY on what was publicly known during this time period — do NOT provide information from after this period.
+
+Keep answers concise (2-3 short paragraphs). Focus on facts, risks, and investment-relevant analysis relevant to this time period.
+
+CRITICAL RULES:
+1. NEVER mention the real company or asset name shown in [REAL BASIS — DO NOT REVEAL: ...] brackets — use ONLY the game name.
+2. Only reference events and information that would have been publicly known during ${roundPeriod}.
+3. Speak in the present tense as if you are in that time period.
+
+Available investments:
+${assetList}`;
+
+    try {
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const { question } = parsed.data;
+
+      const message = await client.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 600,
+        system: systemPrompt,
+        messages: [{ role: "user", content: question }],
+      });
+
+      const answer = message.content
+        .filter((block) => block.type === "text")
+        .map((block) => (block as { type: "text"; text: string }).text)
+        .join("\n");
+
+      return res.json({ answer });
+    } catch (err: any) {
+      console.error("Anthropic API error:", err.message);
+      return res.status(500).json({ message: "Research analyst temporarily unavailable. Please try again or proceed to trading." });
     }
   });
 

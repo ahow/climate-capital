@@ -31,7 +31,8 @@ function generateCode(): string {
   return code;
 }
 
-function getAssetPrice(assetId: string, round: number): number {
+// Price at the START of round N (used for trade execution)
+function getBuyPrice(assetId: string, round: number): number {
   const asset = GAME_ASSETS.find((a) => a.id === assetId);
   if (!asset) throw new Error(`Unknown asset: ${assetId}`);
   if (round <= 1) return asset.startPrice;
@@ -42,10 +43,20 @@ function getAssetPrice(assetId: string, round: number): number {
   return asset.roundPrices[idx];
 }
 
+// Price at the END of round N (used for portfolio valuation and leaderboard)
+function getEndPrice(assetId: string, round: number): number {
+  const asset = GAME_ASSETS.find((a) => a.id === assetId);
+  if (!asset) throw new Error(`Unknown asset: ${assetId}`);
+  if (round <= 0) return asset.startPrice;
+  const idx = round - 1;
+  if (idx >= asset.roundPrices.length) return asset.roundPrices[asset.roundPrices.length - 1];
+  return asset.roundPrices[idx];
+}
+
 function portfolioValue(player: PlayerState, round: number): number {
   let total = player.portfolio.cash;
   for (const h of player.portfolio.holdings) {
-    total += h.units * getAssetPrice(h.assetId, round);
+    total += h.units * getEndPrice(h.assetId, round);
   }
   return total;
 }
@@ -202,7 +213,7 @@ export class DbStorage implements IStorage {
       const asset = GAME_ASSETS.find((a) => a.id === trade.assetId);
       if (!asset) throw new Error(`Unknown asset: ${trade.assetId}`);
 
-      const currentPrice = getAssetPrice(trade.assetId, round);
+      const currentPrice = getBuyPrice(trade.assetId, round);
 
       if (trade.action === "buy") {
         if (trade.amount > player.portfolio.cash) {
@@ -386,7 +397,7 @@ export class DbStorage implements IStorage {
       p.portfolio.holdings
         .filter((h) => fossilIds.has(h.assetId))
         .reduce(
-          (sum, h) => sum + h.units * getAssetPrice(h.assetId, round),
+          (sum, h) => sum + h.units * getEndPrice(h.assetId, round),
           0,
         );
     const baron = playersList.reduce((best, p) =>
@@ -406,8 +417,8 @@ export class DbStorage implements IStorage {
         const purchasePrice =
           h.purchaseRound <= 1
             ? asset.startPrice
-            : getAssetPrice(h.assetId, h.purchaseRound);
-        const currentPriceVal = getAssetPrice(h.assetId, round);
+            : getBuyPrice(h.assetId, h.purchaseRound);
+        const currentPriceVal = getEndPrice(h.assetId, round);
         const loss = h.units * (purchasePrice - currentPriceVal);
         if (loss > worstLoss) {
           worstLoss = loss;
@@ -449,7 +460,7 @@ export class DbStorage implements IStorage {
       p.portfolio.holdings
         .filter((h) => goodCarbonIds.has(h.assetId))
         .reduce(
-          (sum, h) => sum + h.units * getAssetPrice(h.assetId, round),
+          (sum, h) => sum + h.units * getEndPrice(h.assetId, round),
           0,
         );
     const greenwash = playersList.reduce((best, p) =>
@@ -469,12 +480,12 @@ export class DbStorage implements IStorage {
         const asset = GAME_ASSETS.find((a) => a.id === h.assetId)!;
         let peak = asset.startPrice;
         for (let r = 1; r <= h.purchaseRound; r++) {
-          const price = getAssetPrice(h.assetId, r);
+          const price = getBuyPrice(h.assetId, r);
           if (price > peak) peak = price;
         }
-        const purchasePrice = getAssetPrice(h.assetId, h.purchaseRound);
+        const purchasePrice = getBuyPrice(h.assetId, h.purchaseRound);
         if (purchasePrice <= peak * 0.8) {
-          const currentPriceVal = getAssetPrice(h.assetId, round);
+          const currentPriceVal = getEndPrice(h.assetId, round);
           contReturn += h.units * (currentPriceVal - purchasePrice);
         }
       }

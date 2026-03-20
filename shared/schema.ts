@@ -61,7 +61,7 @@ export interface PlayerState {
 export interface GameSession {
   id: string;
   code: string; // 6-char join code
-  status: "lobby" | "briefing" | "trading" | "results" | "takeaways" | "finished";
+  status: "lobby" | "briefing" | "research" | "trading" | "results" | "takeaways" | "finished";
   currentRound: number;
   maxRounds: number;
   players: Record<string, PlayerState>;
