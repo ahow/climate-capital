@@ -48,7 +48,8 @@ export async function registerRoutes(
   // ── Static data routes ──
 
   app.get("/api/assets", (_req: Request, res: Response) => {
-    res.json(GAME_ASSETS);
+    const sanitized = GAME_ASSETS.map(({ realBasis, ...rest }) => rest);
+    res.json(sanitized);
   });
 
   app.get("/api/rounds/:round/briefing", (req: Request, res: Response) => {
@@ -310,6 +311,41 @@ ${assetList}`;
     } catch (err: any) {
       console.error("Anthropic API error:", err.message);
       return res.status(500).json({ message: "Research analyst temporarily unavailable. Please try again or proceed to trading." });
+    }
+  });
+
+  // ── Admin endpoints ──
+
+  const ADMIN_PASSWORD = "BeckhamIsBest";
+
+  app.get("/api/admin/players", async (req: Request, res: Response) => {
+    if (req.query.password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    try {
+      const allPlayers = await storage.getAllPlayers();
+      return res.json({ players: allPlayers });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.delete("/api/admin/players/:playerId", async (req: Request, res: Response) => {
+    if (req.query.password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const playerId = req.params.playerId as string;
+    try {
+      // Find the player's gameId first
+      const allPlayers = await storage.getAllPlayers();
+      const playerRecord = allPlayers.find((p) => p.playerId === playerId);
+      if (!playerRecord) {
+        return res.status(404).json({ message: "Player not found" });
+      }
+      await storage.deletePlayer(playerRecord.gameId, playerId);
+      return res.json({ success: true });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
     }
   });
 

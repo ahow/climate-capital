@@ -67,6 +67,8 @@ export interface IStorage {
   calculateAwards(
     gameId: string,
   ): Promise<Record<string, { playerId: string; playerName: string; value: number }>>;
+  getAllPlayers(): Promise<Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number }>>;
+  deletePlayer(gameId: string, playerId: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -412,6 +414,30 @@ export class MemStorage implements IStorage {
     };
 
     return awards;
+  }
+
+  async getAllPlayers(): Promise<Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number }>> {
+    const result: Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number }> = [];
+    for (const game of Array.from(this.games.values())) {
+      for (const player of Object.values(game.players)) {
+        result.push({
+          gameId: game.id,
+          gameCode: game.code,
+          gameStatus: game.status,
+          playerId: player.id,
+          name: player.name,
+          email: player.email,
+          currentRound: player.currentRound,
+        });
+      }
+    }
+    return result;
+  }
+
+  async deletePlayer(gameId: string, playerId: string): Promise<void> {
+    const game = this.games.get(gameId);
+    if (!game) throw new Error("Game not found");
+    delete game.players[playerId];
   }
 }
 

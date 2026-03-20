@@ -615,7 +615,7 @@ function TradingPhase({
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold text-sm leading-tight">{asset.name}</h4>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">{asset.realBasis}</p>
+
                   </div>
 
                   <div className="flex items-center gap-2">

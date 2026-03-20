@@ -240,7 +240,7 @@ export const GAME_ASSETS: GameAsset[] = [
   },
   {
     id: "brookfield",
-    name: "Brookfield Renewables",
+    name: "GreenBridge Infrastructure",
     realBasis: "Brookfield Renewable Partners",
     assetClass: "infrastructure",
     sector: "Renewable Infrastructure Platform",
@@ -287,7 +287,7 @@ export const GAME_ASSETS: GameAsset[] = [
     realBasis: "Generic Verra REDD+ credits",
     assetClass: "carbon",
     sector: "Voluntary Carbon (Generic)",
-    description: "A portfolio of standard forestry-based carbon credits, primarily REDD+ projects certified by Verra. Cheaper than premium credits, but vulnerable to integrity challenges.",
+    description: "A portfolio of standard forestry-based carbon credits, primarily REDD+ projects certified by a leading registry. Cheaper than premium credits, but vulnerable to integrity challenges.",
     riskLevel: "high",
     startPrice: 100,
     // Standard VCM: $3→$4→$5→$9→$12→$10→$4→$4
@@ -364,8 +364,8 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
     period: "Late 2015 – Early 2017",
     contextBullets: [
       "December 2015: 196 nations sign the Paris Agreement, committing to limit warming to well below 2°C.",
-      "Coal stocks crash on the news: Peabody Energy falls 11–13% on the first trading day after the agreement.",
-      "Goldman Sachs estimates the low-carbon economy is worth $600B+ and growing fast.",
+      "Coal stocks crash on the news — major coal producers fall 11–13% on the first trading day after the agreement.",
+      "Major investment banks estimate the low-carbon economy is worth $600B+ and growing fast.",
       "But coal still generates 40% of global electricity. Oil demand is at record highs.",
       "Renewable energy costs are falling fast but solar and wind are still less than 5% of global electricity generation.",
       "EU carbon allowances are trading at just €5–8/tonne — cheap but potentially a sleeping giant.",
@@ -397,7 +397,7 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "The EU Green Deal is announced (December 2019): Europe commits to becoming the first climate-neutral continent by 2050.",
       "Renewable energy costs cross below fossil fuels in most markets for the first time.",
       "Australian bushfires (2019–20) and extreme weather events make climate risk tangible for asset owners.",
-      "PG&E files for bankruptcy (January 2019) after California wildfire liabilities exceed $30 billion.",
+      "A major California utility files for bankruptcy (January 2019) after wildfire liabilities exceed $30 billion.",
     ],
     keyQuestion: "Is this the beginning of a structural shift in markets, or a sentiment-driven rally?",
   },
@@ -411,8 +411,8 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "Governments announce massive green recovery packages. The EU's €750B NextGenerationEU fund has a 37% climate spending floor.",
       "ESG funds outperform conventional funds during the crash, attracting huge attention.",
       "Clean energy enters a parabolic rally: the Global Clean Energy Index returns +142% for the year.",
-      "December 2020: ElectraDrive (Tesla) joins the S&P 500, triggering $154B in rebalancing trades.",
-      "PlantProtein Co (Beyond Meat) is now publicly traded and riding the alt-protein wave.",
+      "December 2020: a major EV manufacturer joins the S&P 500, triggering $154B in rebalancing trades.",
+      "A major plant-based meat company is now publicly traded and riding the alt-protein wave.",
     ],
     keyQuestion: "Are clean energy valuations justified by the green recovery, or is this a bubble forming?",
   },
@@ -438,7 +438,7 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
     contextBullets: [
       "February 2022: Russia invades Ukraine. European energy security is shattered overnight.",
       "Natural gas prices in Europe spike 10x. Oil surges above $120/barrel.",
-      "Fossil fuel companies post record profits: Titan Petroleum (Exxon) earns $55.7 billion.",
+      "Fossil fuel companies post record profits: the world's largest oil company earns $55.7 billion.",
       "The fossil fuel ETF returns +64% while the S&P 500 falls -18%.",
       "Clean energy stocks collapse: rising rates, supply chain disruption, and renewed fossil fuel political support.",
       "EU responds with REPowerEU: massive acceleration of renewables. But the short-term pain is severe.",
@@ -454,7 +454,7 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
     contextBullets: [
       "Anti-ESG political backlash sweeps the US: Republican states pull funds from ESG-focused managers.",
       "US ESG fund outflows hit $13 billion in 2023 — the first negative year in a decade — accelerating to $19.6 billion in 2024.",
-      "Nordic Wind Power (Ørsted) announces $5.6 billion in offshore wind project writedowns. Stock falls 52%.",
+      "Nordic Wind Power announces $5.6 billion in offshore wind project writedowns. Stock falls 52%.",
       "January 2023: A major investigation reveals that 90%+ of standard REDD+ carbon credits had no real climate impact.",
       "COP28 in Dubai produces historic 'transition away from fossil fuels' language, but no binding mechanism.",
       "Interest rates remain elevated. Growth stocks continue to underperform value stocks.",
@@ -470,9 +470,9 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "November 2024: Trump wins a second presidential term. Signals immediate Paris withdrawal, IRA rollback, and removal of EV mandates.",
       "Election week: Global Clean Energy Index falls -11%, Solar ETF -15%, some clean energy stocks lose 50%+.",
       "Tariffs on Chinese solar panels and EVs disrupt global clean energy supply chains.",
-      "Nordic Wind Power (Ørsted) cancels its largest UK project. Trump issues stop-work orders on US offshore wind.",
+      "Nordic Wind Power cancels its largest UK project. Trump issues stop-work orders on US offshore wind.",
       "BUT: 80%+ of IRA-funded projects are in Republican districts. Full rollback proves politically difficult.",
-      "Brookfield Renewables reports record results driven by AI data centre power demand — a new unexpected catalyst.",
+      "GreenBridge Infrastructure reports record results driven by AI data centre power demand — a new unexpected catalyst.",
       "EU carbon allowances stabilise around €70/tonne. The market anticipates regulatory evolution rather than collapse.",
     ],
     keyQuestion: "This is your final allocation. Where does climate investing go from here?",
@@ -485,12 +485,12 @@ export const ROUND_TAKEAWAYS: RoundTakeaway[] = [
   {
     round: 1,
     takeaways: [
-      "Appalachian Coal (Peabody Energy) filed for bankruptcy in April 2016 — holders lost 100% of their investment.",
+      "Appalachian Coal filed for bankruptcy in April 2016 — holders lost 100% of their investment.",
       "Clean energy stocks gained only modestly. The Paris rally was real but muted for equities in the near term.",
       "EU carbon allowances remained cheap at €5–8/tonne — the signal was there but the price had not yet responded.",
       "Policy signals can take years to feed into asset prices. Early movers in carbon allowances were eventually rewarded enormously, but patience was required.",
     ],
-    didYouKnow: "Peabody Energy's stock had already fallen 95% from $300 to $15 before the Paris Agreement was signed. The final 13% drop was the coup de grâce, not the main event. Timing matters as much as thesis.",
+    didYouKnow: "Appalachian Coal's stock had already fallen 95% from $300 to $15 before the Paris Agreement was signed. The final 13% drop was the coup de grâce, not the main event. Timing matters as much as thesis.",
   },
   {
     round: 2,
@@ -505,12 +505,12 @@ export const ROUND_TAKEAWAYS: RoundTakeaway[] = [
   {
     round: 3,
     takeaways: [
-      "PG&E's bankruptcy was the first major example of physical climate risk destroying shareholder value at utility scale — $30 billion in wildfire liabilities.",
+      "A major California utility's bankruptcy was the first major example of physical climate risk destroying shareholder value at utility scale — $30 billion in wildfire liabilities.",
       "ESG fund flows created a self-reinforcing cycle: inflows drove up ESG stock prices, which attracted more inflows.",
       "The EU Green Deal laid the groundwork for trillions in climate-directed capital over the following decade.",
       "Social movements create political pressure, which creates policy, which creates markets. The 'Greta effect' translated into real capital flows.",
     ],
-    didYouKnow: "PG&E's stock fell 91% from its 2017 high to its 2019 bankruptcy filing. It was one of the first 'climate bankruptcy' cases — a utility destroyed not by transition risk but by physical climate impacts.",
+    didYouKnow: "The California utility's stock fell 91% from its 2017 high to its 2019 bankruptcy filing. It was one of the first 'climate bankruptcy' cases — a utility destroyed not by transition risk but by physical climate impacts.",
   },
   {
     round: 4,
@@ -520,17 +520,17 @@ export const ROUND_TAKEAWAYS: RoundTakeaway[] = [
       "The clean energy rally of 2020 had the hallmarks of a speculative bubble: extreme valuations, retail investor euphoria, and fundamental disconnects.",
       "A good investment thesis can still produce a bad investment at the wrong price. Valuation discipline matters even when you believe the long-term story.",
     ],
-    didYouKnow: "ElectraDrive (Tesla) rose +743% in 2020 alone. On the day it joined the S&P 500 in December, $154 billion worth of stock was traded in a single session — one of the largest trading events in market history.",
+    didYouKnow: "ElectraDrive rose +743% in 2020 alone. On the day it joined the S&P 500 in December, $154 billion worth of stock was traded in a single session — one of the largest trading events in market history.",
   },
   {
     round: 5,
     takeaways: [
       "Clean energy valuations at their peak were pricing in decades of future growth. When interest rates rose, those distant cash flows were discounted more heavily.",
       "Net zero pledges covered 90% of global GDP but had no binding enforcement mechanism. Markets briefly rallied on announcements, then reverted.",
-      "PlantProtein Co (Beyond Meat) peaked at $240 in 2019 and was already declining — the alt-protein thesis was broken by consumer reality, not by climate policy.",
+      "PlantProtein Co peaked at $240 in 2019 and was already declining — the alt-protein thesis was broken by consumer reality, not by climate policy.",
       "Narrative momentum is not the same as fundamental value. The best time to sell is often when the story feels most compelling.",
     ],
-    didYouKnow: "At its peak, the Solar ETF (TAN) had returned +234% in a single year (2020). By the end of 2024, nearly all of those gains had evaporated. Investors who bought at the peak lost more than 70%.",
+    didYouKnow: "At its peak, a leading solar ETF had returned +234% in a single year (2020). By the end of 2024, nearly all of those gains had evaporated. Investors who bought at the peak lost more than 70%.",
   },
   {
     round: 6,
@@ -540,17 +540,17 @@ export const ROUND_TAKEAWAYS: RoundTakeaway[] = [
       "EU carbon allowances actually rose to their all-time high (€105/tonne) during the energy crisis, as the crisis highlighted the cost of carbon dependence.",
       "Geopolitical shocks can reverse market dynamics overnight. Diversification across both fossil and clean assets was the winning strategy in 2022.",
     ],
-    didYouKnow: "Titan Petroleum (ExxonMobil) earned $55.7 billion in profit in 2022 — the largest annual profit ever recorded by a Western oil company. The stock many ESG investors had excluded became the year's best performer.",
+    didYouKnow: "Titan Petroleum earned $55.7 billion in profit in 2022 — the largest annual profit ever recorded by a Western oil company. The stock many ESG investors had excluded became the year's best performer.",
   },
   {
     round: 7,
     takeaways: [
-      "Nordic Wind Power's (Ørsted's) collapse showed that even best-in-class operators can be destroyed by macro conditions: rising rates, cost inflation, and political reversals.",
+      "Nordic Wind Power's collapse showed that even best-in-class operators can be destroyed by macro conditions: rising rates, cost inflation, and political reversals.",
       "The voluntary carbon market bifurcated: Gold Standard premium credits actually increased in value, while generic REDD+ credits collapsed by 60-70%.",
       "US ESG fund outflows were concentrated in the US; European sustainable fund flows remained net positive throughout.",
       "Quality matters more than labels. 'Green' is not a sufficient investment thesis. Due diligence on specific assets, credit integrity, and business model resilience is essential.",
     ],
-    didYouKnow: "The 2023 Guardian/Verra investigation found that over 90% of REDD+ forest carbon credits examined had no measurable impact on deforestation. Verra's market share fell from 80% to 35% within two years.",
+    didYouKnow: "A 2023 major media investigation found that over 90% of REDD+ forest carbon credits examined had no measurable impact on deforestation. The leading registry's market share fell from 80% to 35% within two years.",
   },
   {
     round: 8,
@@ -560,7 +560,7 @@ export const ROUND_TAKEAWAYS: RoundTakeaway[] = [
       "The AI/data centre energy demand surge created an unexpected new demand driver for renewables, partially decoupling clean energy economics from climate policy.",
       "The climate investment landscape is shaped by three forces: policy, technology economics, and energy demand. The best investors read all three.",
     ],
-    didYouKnow: "Brookfield Renewable's record results in 2025 were driven substantially by contracts to supply power to AI data centres for Microsoft and Alphabet — a demand driver that didn't exist when most clean energy investments were originally underwritten.",
+    didYouKnow: "GreenBridge Infrastructure's record results in 2025 were driven substantially by contracts to supply power to AI data centres for major tech companies — a demand driver that didn't exist when most clean energy investments were originally underwritten.",
   },
 ];
 
@@ -601,14 +601,14 @@ export const PREDICTION_QUESTIONS: PredictionQuestion[] = [
     question: "What was the best-performing asset class in 2022?",
     options: ["Clean energy equities", "Green bonds", "Fossil fuel equities", "EU carbon"],
     correctIndex: 2,
-    explanation: "Fossil fuel equities (XLE ETF) returned +64% in 2022 while the S&P 500 fell -18%. Energy security trumped climate ambition.",
+    explanation: "Fossil fuel equities returned +64% in 2022 while broad market indices fell -18%. Energy security trumped climate ambition.",
   },
   {
     round: 7,
     question: "True or False: ESG-labelled index funds outperformed because of their green holdings.",
     options: ["True", "False"],
     correctIndex: 1,
-    explanation: "False. The S&P 500 ESG Index outperformed the regular S&P 500 primarily because of tech stock concentration (Apple, Microsoft), not green companies.",
+    explanation: "False. The ESG Leaders Index outperformed the regular broad market index primarily because of tech stock concentration, not green companies.",
   },
   {
     round: 8,

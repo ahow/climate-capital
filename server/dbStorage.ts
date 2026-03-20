@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import pg from "pg";
 import { games, players } from "@shared/dbSchema";
 import type { IStorage } from "./storage";
@@ -501,5 +501,28 @@ export class DbStorage implements IStorage {
     };
 
     return awards;
+  }
+
+  async getAllPlayers(): Promise<Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number }>> {
+    const rows = await db
+      .select({
+        gameId: games.id,
+        gameCode: games.code,
+        gameStatus: games.status,
+        playerId: players.id,
+        name: players.name,
+        email: players.email,
+        currentRound: players.currentRound,
+      })
+      .from(players)
+      .innerJoin(games, eq(players.gameId, games.id));
+
+    return rows;
+  }
+
+  async deletePlayer(gameId: string, playerId: string): Promise<void> {
+    await db
+      .delete(players)
+      .where(eq(players.id, playerId));
   }
 }
