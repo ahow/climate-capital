@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Trash2, Leaf, ArrowLeft, RefreshCw } from "lucide-react";
+import { Trash2, ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -85,17 +84,18 @@ export default function AdminPage() {
 
   if (!authenticated) {
     return (
-      <div className="dark min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-sm space-y-6">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Leaf className="h-7 w-7 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">Climate Capital</h1>
+      <div className="min-h-screen bg-white text-[#001E41] flex flex-col">
+        <div className="bg-[#001E41] text-white">
+          <div className="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
+            <span className="font-sans font-bold tracking-wide text-base">CLIMATE CAPITAL · ADMIN</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-white/70">Schroders</span>
           </div>
-          <Card className="border-primary/20">
-            <CardHeader>
-              <CardTitle className="text-lg">Admin Access</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        </div>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm">
+            <h1 className="font-sans font-bold text-2xl text-[#001E41] mb-1">Admin Access</h1>
+            <div className="h-1 w-12 bg-[#0074B7] mb-6" aria-hidden />
+            <div className="bg-white border border-[#D9DFE7] rounded-xl p-6 space-y-4">
               <Input
                 type="password"
                 placeholder="Admin password"
@@ -104,36 +104,39 @@ export default function AdminPage() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleLogin();
                 }}
+                className="bg-white border-[#D9DFE7] text-[#001E41] focus-visible:ring-[#0074B7] focus-visible:border-[#0074B7]"
               />
               {authError && (
-                <p className="text-sm text-destructive">{authError}</p>
+                <p className="text-sm text-[#C4372C]">{authError}</p>
               )}
-              <Button className="w-full" onClick={handleLogin}>
+              <Button
+                className="w-full bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px]"
+                onClick={handleLogin}
+              >
                 Sign In
               </Button>
               <Button
                 variant="ghost"
-                className="w-full text-muted-foreground"
+                className="w-full text-[#494949] hover:text-[#001E41]"
                 onClick={() => navigate("/")}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Home
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="dark min-h-screen bg-background text-foreground p-6">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-white text-[#001E41]">
+      {/* Navy header */}
+      <div className="bg-[#001E41] text-white border-b border-[#001E41]">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Leaf className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
+            <span className="font-sans font-bold tracking-wide text-base">CLIMATE CAPITAL · ADMIN</span>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -141,6 +144,7 @@ export default function AdminPage() {
               size="sm"
               onClick={() => fetchPlayers(ADMIN_PASSWORD)}
               disabled={loading}
+              className="bg-transparent border-white/40 text-white hover:bg-white hover:text-[#001E41]"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Refresh
@@ -149,90 +153,91 @@ export default function AdminPage() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/")}
-              className="text-muted-foreground"
+              className="text-white/80 hover:text-white hover:bg-white/10"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
+              Back
             </Button>
           </div>
         </div>
+      </div>
 
-        {/* Error */}
+      <div className="max-w-5xl mx-auto p-6 space-y-6">
+        <div>
+          <h1 className="font-sans font-bold text-2xl text-[#001E41]">Players</h1>
+          <div className="h-1 w-12 bg-[#0074B7] mt-2" aria-hidden />
+          <p className="text-sm text-[#494949] mt-3">
+            {players.length} total
+          </p>
+        </div>
+
         {error && (
-          <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="rounded-md border border-[#C4372C]/30 bg-[#C4372C]/5 px-4 py-3 text-sm text-[#C4372C]">
             {error}
           </div>
         )}
 
-        {/* Players Table */}
-        <Card className="border-border/40">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">
-              All Players{" "}
-              <span className="text-muted-foreground font-normal text-sm">
-                ({players.length})
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {loading ? (
-              <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
-                Loading players...
-              </div>
-            ) : players.length === 0 ? (
-              <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
-                No players found.
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border/40 hover:bg-transparent">
-                    <TableHead className="text-muted-foreground text-xs uppercase">Name</TableHead>
-                    <TableHead className="text-muted-foreground text-xs uppercase">Email</TableHead>
-                    <TableHead className="text-muted-foreground text-xs uppercase">Game Code</TableHead>
-                    <TableHead className="text-muted-foreground text-xs uppercase">Status</TableHead>
-                    <TableHead className="text-muted-foreground text-xs uppercase">Round</TableHead>
-                    <TableHead className="text-muted-foreground text-xs uppercase text-right">Actions</TableHead>
+        <div className="bg-white border border-[#D9DFE7] rounded-xl overflow-hidden">
+          {loading ? (
+            <div className="flex items-center justify-center py-12 text-[#494949] text-sm">
+              Loading players...
+            </div>
+          ) : players.length === 0 ? (
+            <div className="flex items-center justify-center py-12 text-[#494949] text-sm">
+              No players found.
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-[#001E41] hover:bg-[#001E41]">
+                  <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Name</TableHead>
+                  <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Email</TableHead>
+                  <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Game Code</TableHead>
+                  <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Status</TableHead>
+                  <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Round</TableHead>
+                  <TableHead className="text-white text-xs uppercase tracking-wider font-semibold text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {players.map((player, idx) => (
+                  <TableRow
+                    key={player.playerId}
+                    className={`border-[#D9DFE7] ${idx % 2 === 1 ? "bg-[#F4F6F9]" : "bg-white"}`}
+                  >
+                    <TableCell className="font-medium text-sm text-[#001E41]">{player.name}</TableCell>
+                    <TableCell className="text-sm text-[#494949]">{player.email}</TableCell>
+                    <TableCell className="font-mono text-sm text-[#001E41]">{player.gameCode}</TableCell>
+                    <TableCell className="text-sm">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          player.gameStatus === "finished"
+                            ? "bg-[#F4F6F9] text-[#494949]"
+                            : player.gameStatus === "lobby"
+                            ? "bg-[#0074B7]/10 text-[#0074B7]"
+                            : "bg-[#00875A]/10 text-[#00875A]"
+                        }`}
+                      >
+                        {player.gameStatus}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-[#001E41]">{player.currentRound}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-[#C4372C] hover:text-[#C4372C] hover:bg-[#C4372C]/10"
+                        disabled={deletingId === player.playerId}
+                        onClick={() => handleDelete(player.playerId, player.name)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {players.map((player) => (
-                    <TableRow key={player.playerId} className="border-border/30">
-                      <TableCell className="font-medium text-sm">{player.name}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{player.email}</TableCell>
-                      <TableCell className="font-mono text-sm">{player.gameCode}</TableCell>
-                      <TableCell className="text-sm">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                            player.gameStatus === "finished"
-                              ? "bg-muted text-muted-foreground"
-                              : player.gameStatus === "lobby"
-                              ? "bg-blue-500/15 text-blue-400"
-                              : "bg-emerald-500/15 text-emerald-400"
-                          }`}
-                        >
-                          {player.gameStatus}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-sm">{player.currentRound}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          disabled={deletingId === player.playerId}
-                          onClick={() => handleDelete(player.playerId, player.name)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
       </div>
     </div>
   );

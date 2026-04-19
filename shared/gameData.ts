@@ -31,7 +31,7 @@ export const GAME_ASSETS: GameAsset[] = [
     startPrice: 100,
     // Rounds: 1(2015-17), 2(2017-18), 3(2018-19), 4(2020), 5(2021), 6(2022), 7(2023-24), 8(2024-25)
     // TSLA: $14→$14.25→$20.47→$235→$381→$123→$248→$350 (approx, split-adj)
-    roundPrices: [102, 146, 1679, 2724, 880, 1773, 2500],
+    roundPrices: [90, 139, 174, 1470, 2202, 770, 2524],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -45,7 +45,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // ENPH: ~$5→$6→$25→$175→$307→$135→$120→$65
-    roundPrices: [120, 500, 3500, 6140, 2700, 2400, 1300],
+    roundPrices: [42, 135, 744, 4999, 5212, 7549, 3765],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -59,7 +59,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // Orsted (DKK): IPO ~134→280→600→800→1000→400→180→122
-    roundPrices: [209, 448, 597, 746, 299, 134, 91],
+    roundPrices: [100, 123, 194, 314, 186, 129, 86],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -73,7 +73,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // PLUG: $2.67→$2.50→$3→$33→$65→$13→$5→$2
-    roundPrices: [94, 112, 1236, 2434, 487, 187, 75],
+    roundPrices: [50, 59, 150, 1607, 1338, 586, 213],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -87,7 +87,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // NEE (split-adj): ~$24→$36→$48→$72→$88→$76→$68→$76
-    roundPrices: [150, 200, 300, 367, 317, 283, 317],
+    roundPrices: [109, 166, 235, 270, 336, 318, 231],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -103,7 +103,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // XOM: ~$80→$82→$68→$42→$61→$110→$100→$110 (+ dividends)
-    roundPrices: [103, 85, 53, 76, 138, 125, 138],
+    roundPrices: [111, 89, 85, 41, 70, 135, 126],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -117,7 +117,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // BTU: ~$15 (2015, already in freefall)→$0 (bankruptcy 2016)→emerged→spike→fade
-    roundPrices: [0, 0, 0, 40, 120, 80, 40],
+    roundPrices: [0, 0, 92, 24, 101, 265, 247],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -131,7 +131,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // VW: ~€170→€140→€145→€140→€200→€120→€110→€95
-    roundPrices: [82, 85, 82, 118, 71, 65, 56],
+    roundPrices: [105, 104, 122, 120, 182, 104, 82],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -147,7 +147,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // ICLN: ~$11→$11→$12→$28→$33→$18→$14→$15
-    roundPrices: [100, 109, 255, 300, 164, 127, 136],
+    roundPrices: [80, 84, 119, 287, 215, 202, 158],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -161,7 +161,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // S&P 500 ESG roughly tracks S&P 500 with slight outperformance
-    roundPrices: [130, 145, 180, 230, 195, 240, 290],
+    roundPrices: [132, 143, 186, 237, 312, 257, 320],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -175,7 +175,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // S&P 500: ~2050→2700→2900→3750→4770→3840→4770→5600
-    roundPrices: [132, 141, 183, 233, 187, 233, 273],
+    roundPrices: [131, 123, 158, 184, 233, 188, 288],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -191,7 +191,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "low",
     startPrice: 100,
     // Green bonds: modest returns, hit in 2022 by rates
-    roundPrices: [103, 105, 108, 112, 97, 100, 104],
+    roundPrices: [103, 107, 114, 128, 118, 92, 101],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -204,7 +204,7 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A sustainability-linked bond where the coupon steps up if the issuer misses emissions targets. A pioneer instrument testing whether financial incentives can drive corporate decarbonisation.",
     riskLevel: "low",
     startPrice: 100,
-    roundPrices: [102, 104, 107, 110, 96, 101, 105],
+    roundPrices: [102, 104, 108, 115, 108, 88, 96],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -220,7 +220,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // Good early vintages, then cost/rate squeeze
-    roundPrices: [108, 116, 125, 135, 128, 95, 80],
+    roundPrices: [108, 118, 130, 145, 155, 130, 105],
     lockRounds: 2,
     minAllocation: 5_000_000,
   },
@@ -234,7 +234,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // Solar IRR compression over time
-    roundPrices: [112, 124, 138, 152, 148, 140, 135],
+    roundPrices: [112, 126, 142, 160, 172, 158, 150],
     lockRounds: 2,
     minAllocation: 5_000_000,
   },
@@ -247,7 +247,7 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A diversified global renewable infrastructure fund targeting 12-15% returns. The most consistent performer in the asset class, now boosted by AI data centre power demand. LOCKED for 2 rounds after purchase.",
     riskLevel: "medium",
     startPrice: 100,
-    roundPrices: [110, 120, 135, 150, 142, 158, 175],
+    roundPrices: [123, 121, 234, 422, 361, 265, 266],
     lockRounds: 2,
     minAllocation: 5_000_000,
   },
@@ -263,7 +263,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // EU ETS: €5→€7→€22→€33→€50→€85→€65→€70
-    roundPrices: [140, 440, 660, 1000, 1700, 1300, 1400],
+    roundPrices: [73, 291, 364, 408, 655, 1166, 933],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -277,7 +277,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // Quality VCM: $4→$5→$7→$12→$15→$14→$16→$17
-    roundPrices: [125, 175, 300, 375, 350, 400, 425],
+    roundPrices: [100, 100, 114, 136, 164, 218, 182],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -291,7 +291,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // Standard VCM: $3→$4→$5→$9→$12→$10→$4→$4
-    roundPrices: [133, 167, 300, 400, 333, 133, 133],
+    roundPrices: [97, 92, 120, 92, 158, 315, 185],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -305,7 +305,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // Not available until round 3; early vintages ok, then scandal hit
-    roundPrices: [100, 100, 105, 112, 108, 100, 98],
+    roundPrices: [100, 100, 102, 105, 108, 103, 100],
     lockRounds: 3,
     minAllocation: 5_000_000,
   },
@@ -321,7 +321,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // BYND: not public until 2019. IPO $65→$240→$140→$25→$5→$1
-    roundPrices: [100, 100, 369, 215, 38, 8, 2],
+    roundPrices: [100, 100, 100, 165, 86, 16, 12],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -335,7 +335,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // PCG: ~$56→$66→$48→$9→$12→$12→$17→$18
-    roundPrices: [118, 86, 16, 21, 21, 30, 32],
+    roundPrices: [107, 44, 20, 22, 22, 26, 30],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -349,7 +349,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // Speculative - not tradeable until round 4, high risk
-    roundPrices: [100, 100, 100, 90, 85, 95, 110],
+    roundPrices: [100, 100, 100, 95, 92, 100, 115],
     lockRounds: 0,
     minAllocation: 1_000_000,
   },
@@ -357,7 +357,12 @@ export const GAME_ASSETS: GameAsset[] = [
 
 // ── ROUND BRIEFINGS ──
 
-export const ROUND_BRIEFINGS: RoundBriefing[] = [
+// Extended briefing data used by the client ticker. The `newsHeadlines` field is
+// optional in the shared schema — it's added here for UI only and the server
+// returns the whole object so the client can render the ticker.
+export type RoundBriefingWithNews = RoundBriefing & { newsHeadlines?: string[] };
+
+export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
   {
     round: 1,
     title: "The Paris Moment",
@@ -371,6 +376,16 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "EU carbon allowances are trading at just €5–8/tonne — cheap but potentially a sleeping giant.",
     ],
     keyQuestion: "How aggressively should you bet on the Paris signal vs. the ongoing reality of fossil fuel dominance?",
+    newsHeadlines: [
+      "BREAKING: 196 nations sign Paris Climate Agreement — markets digest deal",
+      "Coal stocks tumble: Peabody Energy files for Chapter 11 bankruptcy",
+      "OPEC refuses production cut — WTI crude plunges below $30/barrel",
+      "Clean energy investment hits record $349 billion in 2015 — BNEF",
+      "China pledges to peak CO2 emissions by 2030; Beijing shuts coal plants",
+      "Tesla unveils Model 3: 325,000 pre-orders logged in first week",
+      "Brexit vote roils European utilities; pound falls 10% against dollar",
+      "EU ETS carbon allowances trade below €5/tonne — lowest level since 2013",
+    ],
   },
   {
     round: 2,
@@ -386,6 +401,16 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "ESG fund inflows continued growing despite US political headwinds.",
     ],
     keyQuestion: "Was Paris a false start, or is the US an outlier? Should you follow the politics or the policy machinery?",
+    newsHeadlines: [
+      "BREAKING: Trump announces US withdrawal from Paris Agreement",
+      "Non-US renewable stocks drop 14% in 20 days post-election",
+      "Energy Transfer Partners surges 19% in election week on pipeline hopes",
+      "EU unveils Sustainable Finance Action Plan — trillions to be redirected",
+      "TCFD releases final recommendations — backed by 100+ CEOs, $3.3tn market cap",
+      "ESG fund inflows hit $5.5bn in 2017, defying political headwinds",
+      "China launches national emissions trading scheme — world's largest carbon market",
+      "Ørsted completes world's largest offshore wind project at Walney Extension",
+    ],
   },
   {
     round: 3,
@@ -400,6 +425,16 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "A major California utility files for bankruptcy (January 2019) after wildfire liabilities exceed $30 billion.",
     ],
     keyQuestion: "Is this the beginning of a structural shift in markets, or a sentiment-driven rally?",
+    newsHeadlines: [
+      "BREAKING: PG&E files for bankruptcy — $30bn wildfire liabilities crush stock",
+      "Beyond Meat IPO soars 163% on debut — biggest pop since 2000",
+      "Greta Thunberg leads 4 million-strong global climate strike",
+      "EU Green Deal unveiled: €1 trillion, net-zero by 2050 target",
+      "US sustainable fund inflows hit record $20.6bn in 2019 — Morningstar",
+      "BlackRock's Larry Fink: 'climate change is investment risk' in annual letter",
+      "Solar becomes cheapest source of electricity in history — IEA",
+      "Australian bushfires devastate wildlife; climate attribution studies trigger investor alarm",
+    ],
   },
   {
     round: 4,
@@ -415,6 +450,16 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "A major plant-based meat company is now publicly traded and riding the alt-protein wave.",
     ],
     keyQuestion: "Are clean energy valuations justified by the green recovery, or is this a bubble forming?",
+    newsHeadlines: [
+      "BREAKING: WTI crude futures crash to -$37.63/barrel — negative for first time",
+      "S&P 500 plunges 34% in 23 trading days as COVID-19 shuts global economy",
+      "EU approves €750bn NextGenerationEU — 37% earmarked for climate",
+      "Tesla joins S&P 500 — $154bn rebalancing trade",
+      "iShares Global Clean Energy ETF (ICLN) returns +142% in 2020",
+      "Enphase Energy up 572% YTD; solar stocks hit record highs",
+      "Biden wins election; vows to rejoin Paris Agreement 'day one'",
+      "Green bond issuance tops $270bn globally — shattering previous record",
+    ],
   },
   {
     round: 5,
@@ -430,6 +475,16 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "EU carbon allowances surge past €50/tonne as the EU tightens the Emissions Trading System.",
     ],
     keyQuestion: "Everything climate looks like it only goes up. Take profits on the extraordinary rally, or ride the momentum?",
+    newsHeadlines: [
+      "BREAKING: COP26 — 140+ nations make net zero pledges covering 90% of GDP",
+      "Rivian IPO valued at $86bn on first day — bigger than Ford",
+      "Lucid Motors merges via SPAC in $24bn deal; EV SPAC mania peaks",
+      "EU ETS carbon price tops €50/tonne for first time — up 150% in 18 months",
+      "ESG assets under management hit $35 trillion globally — GSIA report",
+      "Fed signals rate hikes as US inflation prints 6.8% — 40-year high",
+      "Voluntary carbon market volumes quadruple; Verra credits reach $15/tonne",
+      "Ørsted stock falls 30% from peak as offshore wind auction prices plunge",
+    ],
   },
   {
     round: 6,
@@ -446,6 +501,16 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "EU carbon allowances hit an ALL-TIME HIGH of €105/tonne as the energy crisis highlights carbon dependence.",
     ],
     keyQuestion: "Is this the bottom for clean energy, or the beginning of a new fossil fuel era? And what about the IRA?",
+    newsHeadlines: [
+      "BREAKING: Russia invades Ukraine — European gas prices spike 10x",
+      "ExxonMobil posts $55.7bn profit — biggest ever by a Western oil major",
+      "Biden signs Inflation Reduction Act: $369bn for clean energy",
+      "EU ETS hits all-time high of €105/tonne as energy crisis bites",
+      "iShares Clean Energy ETF down 25% YTD; ICLN investors bail",
+      "Fossil fuel ETF XLE returns +64% in 2022; S&P 500 falls -18%",
+      "Germany reopens coal plants; Habeck declares 'energy emergency'",
+      "Fed delivers 75bp hike; 10-year yields top 4% — rate-sensitive renewables hammered",
+    ],
   },
   {
     round: 7,
@@ -461,6 +526,16 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "The voluntary carbon market bifurcates sharply: premium credits hold value, generic credits collapse.",
     ],
     keyQuestion: "Is the climate investment thesis dead, or is this the buying opportunity of a generation?",
+    newsHeadlines: [
+      "BREAKING: Guardian investigation — 90%+ of Verra REDD+ credits 'phantom'",
+      "Ørsted announces $5.6bn offshore wind writedown; stock falls 25%",
+      "US ESG fund outflows hit record $13bn in 2023 — first negative year",
+      "Texas, Florida pull pension funds from BlackRock over ESG",
+      "COP28 deal calls for 'transition away' from fossil fuels — no binding mechanism",
+      "Nvidia soars 239% on AI boom; climate stocks left behind",
+      "Tesla deliveries miss estimates; China EV price war intensifies",
+      "Voluntary carbon market splits: Gold Standard premiums hold, generics collapse",
+    ],
   },
   {
     round: 8,
@@ -476,6 +551,17 @@ export const ROUND_BRIEFINGS: RoundBriefing[] = [
       "EU carbon allowances stabilise around €70/tonne. The market anticipates regulatory evolution rather than collapse.",
     ],
     keyQuestion: "This is your final allocation. Where does climate investing go from here?",
+    newsHeadlines: [
+      "BREAKING: Trump wins second term — vows immediate Paris withdrawal",
+      "Global Clean Energy Index falls -11% in election week; solar ETF -15%",
+      "Trump issues stop-work order on US offshore wind projects",
+      "Ørsted cancels Hornsea 4 project in UK; NextEra reviews pipeline",
+      "Tariffs on Chinese solar panels and EVs reshape supply chains",
+      "AI data centre power demand surges; hyperscalers sign renewable PPAs",
+      "80%+ of IRA-funded projects in Republican districts — rollback faces resistance",
+      "EU ETS stabilises around €70/tonne; REPowerEU accelerates",
+      "Brookfield Renewable posts record results on AI power contracts",
+    ],
   },
 ];
 
