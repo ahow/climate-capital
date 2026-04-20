@@ -69,6 +69,15 @@ export interface IStorage {
   ): Promise<Record<string, { playerId: string; playerName: string; value: number }>>;
   getAllPlayers(): Promise<Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number }>>;
   deletePlayer(gameId: string, playerId: string): Promise<void>;
+  getAllTimeLeaderboard(): Promise<Array<{
+    rank: number;
+    name: string;
+    email: string;
+    totalValue: number;
+    gameCode: string;
+    completedRound: number;
+    date: string;
+  }>>;
 }
 
 export class MemStorage implements IStorage {
@@ -438,6 +447,42 @@ export class MemStorage implements IStorage {
     const game = this.games.get(gameId);
     if (!game) throw new Error("Game not found");
     delete game.players[playerId];
+  }
+
+  async getAllTimeLeaderboard(): Promise<Array<{
+    rank: number;
+    name: string;
+    email: string;
+    totalValue: number;
+    gameCode: string;
+    completedRound: number;
+    date: string;
+  }>> {
+    const entries: Array<{
+      name: string;
+      email: string;
+      totalValue: number;
+      gameCode: string;
+      completedRound: number;
+      date: string;
+    }> = [];
+
+    for (const game of Array.from(this.games.values())) {
+      const round = game.currentRound;
+      for (const player of Object.values(game.players)) {
+        entries.push({
+          name: player.name,
+          email: player.email,
+          totalValue: portfolioValue(player, round),
+          gameCode: game.code,
+          completedRound: round,
+          date: new Date().toISOString(),
+        });
+      }
+    }
+
+    entries.sort((a, b) => b.totalValue - a.totalValue);
+    return entries.slice(0, 50).map((e, i) => ({ ...e, rank: i + 1 }));
   }
 }
 

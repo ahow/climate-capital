@@ -8,6 +8,7 @@ import { GameProvider } from "@/contexts/GameContext";
 import Home from "@/pages/home";
 import GamePage from "@/pages/game";
 import AdminPage from "@/pages/admin";
+import LeaderboardPage from "@/pages/leaderboard";
 import NotFound from "@/pages/not-found";
 
 function AppRouter() {
@@ -16,6 +17,7 @@ function AppRouter() {
       <Route path="/" component={Home} />
       <Route path="/game" component={GamePage} />
       <Route path="/admin" component={AdminPage} />
+      <Route path="/leaderboard" component={LeaderboardPage} />
       <Route component={NotFound} />
     </Switch>
   );

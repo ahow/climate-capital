@@ -525,4 +525,43 @@ export class DbStorage implements IStorage {
       .delete(players)
       .where(eq(players.id, playerId));
   }
+
+  async getAllTimeLeaderboard(): Promise<Array<{
+    rank: number;
+    name: string;
+    email: string;
+    totalValue: number;
+    gameCode: string;
+    completedRound: number;
+    date: string;
+  }>> {
+    const allGames = await db.select().from(games);
+    const entries: Array<{
+      name: string;
+      email: string;
+      totalValue: number;
+      gameCode: string;
+      completedRound: number;
+      date: string;
+    }> = [];
+
+    for (const gameRow of allGames) {
+      const game = await this.getGame(gameRow.id);
+      if (!game) continue;
+      const round = game.currentRound;
+      for (const player of Object.values(game.players)) {
+        entries.push({
+          name: player.name,
+          email: player.email,
+          totalValue: portfolioValue(player, round),
+          gameCode: game.code,
+          completedRound: round,
+          date: gameRow.createdAt ? new Date(gameRow.createdAt).toISOString() : new Date().toISOString(),
+        });
+      }
+    }
+
+    entries.sort((a, b) => b.totalValue - a.totalValue);
+    return entries.slice(0, 50).map((e, i) => ({ ...e, rank: i + 1 }));
+  }
 }

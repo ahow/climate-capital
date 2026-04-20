@@ -349,5 +349,15 @@ ${assetList}`;
     }
   });
 
+  // ── ALL-TIME LEADERBOARD (public) ──
+  app.get("/api/leaderboard", async (_req: Request, res: Response) => {
+    try {
+      const leaderboard = await storage.getAllTimeLeaderboard();
+      return res.json({ leaderboard });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
   return httpServer;
 }

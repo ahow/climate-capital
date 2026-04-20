@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Trash2, ArrowLeft, RefreshCw } from "lucide-react";
+import { Trash2, ArrowLeft, RefreshCw, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -148,6 +148,15 @@ export default function AdminPage() {
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Refresh
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/leaderboard")}
+              className="text-white/80 hover:text-white hover:bg-white/10"
+            >
+              <Trophy className="h-4 w-4 mr-2" />
+              Leaderboard
             </Button>
             <Button
               variant="ghost"
