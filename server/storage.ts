@@ -78,6 +78,7 @@ export interface IStorage {
     completedRound: number;
     date: string;
   }>>;
+  resetCurrentGame(): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -483,6 +484,14 @@ export class MemStorage implements IStorage {
 
     entries.sort((a, b) => b.totalValue - a.totalValue);
     return entries.slice(0, 50).map((e, i) => ({ ...e, rank: i + 1 }));
+  }
+
+  async resetCurrentGame(): Promise<void> {
+    for (const game of Array.from(this.games.values())) {
+      if (game.status !== "finished") {
+        game.status = "finished";
+      }
+    }
   }
 }
 

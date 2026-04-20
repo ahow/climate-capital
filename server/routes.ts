@@ -349,6 +349,19 @@ ${assetList}`;
     }
   });
 
+  // ── RESET GAME (admin) ──
+  app.post("/api/admin/reset", async (req: Request, res: Response) => {
+    if (req.query.password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    try {
+      await storage.resetCurrentGame();
+      return res.json({ success: true, message: "All active games have been ended. The next join will create a fresh game." });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
   // ── ALL-TIME LEADERBOARD (public) ──
   app.get("/api/leaderboard", async (_req: Request, res: Response) => {
     try {

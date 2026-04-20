@@ -564,4 +564,17 @@ export class DbStorage implements IStorage {
     entries.sort((a, b) => b.totalValue - a.totalValue);
     return entries.slice(0, 50).map((e, i) => ({ ...e, rank: i + 1 }));
   }
+
+  async resetCurrentGame(): Promise<void> {
+    const activeGames = await db
+      .select()
+      .from(games)
+      .where(sql`${games.status} != 'finished'`);
+    for (const game of activeGames) {
+      await db
+        .update(games)
+        .set({ status: "finished" })
+        .where(eq(games.id, game.id));
+    }
+  }
 }
