@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import type {
   GameSession,
   PlayerState,
+  PlayerPhase,
   Holding,
   Trade,
 } from "@shared/schema";
@@ -59,15 +60,16 @@ export interface IStorage {
   findPlayerByEmail(gameId: string, email: string): Promise<PlayerState | undefined>;
   getPlayer(gameId: string, playerId: string): Promise<PlayerState | undefined>;
   submitTrades(gameId: string, playerId: string, trades: Trade[]): Promise<PlayerState>;
-  advanceRound(gameId: string): Promise<GameSession>;
-  setPhase(gameId: string, phase: GameSession["status"]): Promise<GameSession>;
+  advancePlayer(gameId: string, playerId: string): Promise<PlayerState>;
+  setPlayerPhase(gameId: string, playerId: string, phase: PlayerPhase): Promise<PlayerState>;
+  resetPlayer(gameId: string, playerId: string): Promise<PlayerState>;
   getLeaderboard(
     gameId: string,
   ): Promise<{ playerId: string; name: string; totalValue: number; rank: number }[]>;
   calculateAwards(
     gameId: string,
   ): Promise<Record<string, { playerId: string; playerName: string; value: number }>>;
-  getAllPlayers(): Promise<Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number }>>;
+  getAllPlayers(): Promise<Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number; phase: PlayerPhase }>>;
   deletePlayer(gameId: string, playerId: string): Promise<void>;
   getAllTimeLeaderboard(): Promise<Array<{
     rank: number;
@@ -78,7 +80,6 @@ export interface IStorage {
     completedRound: number;
     date: string;
   }>>;
-  resetCurrentGame(): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -133,7 +134,8 @@ export class MemStorage implements IStorage {
       id,
       name: playerName,
       email,
-      currentRound: game.currentRound,
+      currentRound: 1,
+      phase: "lobby",
       portfolio: {
         cash: STARTING_CASH,
         holdings: [],
@@ -157,7 +159,7 @@ export class MemStorage implements IStorage {
     const player = game.players[playerId];
     if (!player) throw new Error("Player not found");
 
-    const round = game.currentRound;
+    const round = player.currentRound;
 
     for (const trade of trades) {
       const asset = GAME_ASSETS.find((a) => a.id === trade.assetId);
@@ -236,35 +238,50 @@ export class MemStorage implements IStorage {
     return player;
   }
 
-  async advanceRound(gameId: string): Promise<GameSession> {
+  async advancePlayer(gameId: string, playerId: string): Promise<PlayerState> {
     const game = this.games.get(gameId);
     if (!game) throw new Error("Game not found");
+    const player = game.players[playerId];
+    if (!player) throw new Error("Player not found");
 
-    for (const player of Object.values(game.players)) {
-      const value = portfolioValue(player, game.currentRound);
-      player.valueHistory.push(value);
-    }
+    const value = portfolioValue(player, player.currentRound);
+    player.valueHistory.push(value);
 
-    game.currentRound += 1;
+    player.currentRound += 1;
 
-    for (const player of Object.values(game.players)) {
-      player.currentRound = game.currentRound;
-    }
-
-    if (game.currentRound > game.maxRounds) {
-      game.status = "finished";
+    if (player.currentRound > game.maxRounds) {
+      player.phase = "finished";
     } else {
-      game.status = "briefing";
+      player.phase = "briefing";
     }
 
-    return game;
+    return player;
   }
 
-  async setPhase(gameId: string, phase: GameSession["status"]): Promise<GameSession> {
+  async setPlayerPhase(
+    gameId: string,
+    playerId: string,
+    phase: PlayerPhase,
+  ): Promise<PlayerState> {
     const game = this.games.get(gameId);
     if (!game) throw new Error("Game not found");
-    game.status = phase;
-    return game;
+    const player = game.players[playerId];
+    if (!player) throw new Error("Player not found");
+    player.phase = phase;
+    return player;
+  }
+
+  async resetPlayer(gameId: string, playerId: string): Promise<PlayerState> {
+    const game = this.games.get(gameId);
+    if (!game) throw new Error("Game not found");
+    const player = game.players[playerId];
+    if (!player) throw new Error("Player not found");
+    player.currentRound = 1;
+    player.phase = "lobby";
+    player.portfolio = { cash: STARTING_CASH, holdings: [] };
+    player.valueHistory = [];
+    player.predictions = [];
+    return player;
   }
 
   async getLeaderboard(
@@ -276,7 +293,7 @@ export class MemStorage implements IStorage {
     const entries = Object.values(game.players).map((player) => ({
       playerId: player.id,
       name: player.name,
-      totalValue: portfolioValue(player, game.currentRound),
+      totalValue: portfolioValue(player, player.currentRound),
     }));
 
     entries.sort((a, b) => b.totalValue - a.totalValue);
@@ -293,13 +310,12 @@ export class MemStorage implements IStorage {
     const players = Object.values(game.players);
     if (players.length === 0) return {};
 
-    const round = game.currentRound;
     const awards: Record<
       string,
       { playerId: string; playerName: string; value: number }
     > = {};
 
-    const totalVal = (p: PlayerState) => portfolioValue(p, round);
+    const totalVal = (p: PlayerState) => portfolioValue(p, p.currentRound);
 
     const champion = players.reduce((best, p) =>
       totalVal(p) > totalVal(best) ? p : best,
@@ -323,7 +339,7 @@ export class MemStorage implements IStorage {
     const fossilReturn = (p: PlayerState) => {
       return p.portfolio.holdings
         .filter((h) => fossilIds.has(h.assetId))
-        .reduce((sum, h) => sum + h.units * getEndPrice(h.assetId, round), 0);
+        .reduce((sum, h) => sum + h.units * getEndPrice(h.assetId, p.currentRound), 0);
     };
     const baron = players.reduce((best, p) =>
       fossilReturn(p) > fossilReturn(best) ? p : best,
@@ -343,7 +359,7 @@ export class MemStorage implements IStorage {
           h.purchaseRound <= 1
             ? asset.startPrice
             : getBuyPrice(h.assetId, h.purchaseRound);
-        const currentPriceVal = getEndPrice(h.assetId, round);
+        const currentPriceVal = getEndPrice(h.assetId, p.currentRound);
         const loss = h.units * (purchasePrice - currentPriceVal);
         if (loss > worstLoss) {
           worstLoss = loss;
@@ -384,7 +400,7 @@ export class MemStorage implements IStorage {
     const carbonReturn = (p: PlayerState) => {
       return p.portfolio.holdings
         .filter((h) => goodCarbonIds.has(h.assetId))
-        .reduce((sum, h) => sum + h.units * getEndPrice(h.assetId, round), 0);
+        .reduce((sum, h) => sum + h.units * getEndPrice(h.assetId, p.currentRound), 0);
     };
     const greenwash = players.reduce((best, p) =>
       carbonReturn(p) > carbonReturn(best) ? p : best,
@@ -408,7 +424,7 @@ export class MemStorage implements IStorage {
         }
         const purchasePrice = getBuyPrice(h.assetId, h.purchaseRound);
         if (purchasePrice <= peak * 0.8) {
-          const currentPriceVal = getEndPrice(h.assetId, round);
+          const currentPriceVal = getEndPrice(h.assetId, p.currentRound);
           contReturn += h.units * (currentPriceVal - purchasePrice);
         }
       }
@@ -426,8 +442,8 @@ export class MemStorage implements IStorage {
     return awards;
   }
 
-  async getAllPlayers(): Promise<Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number }>> {
-    const result: Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number }> = [];
+  async getAllPlayers(): Promise<Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number; phase: PlayerPhase }>> {
+    const result: Array<{ gameId: string; gameCode: string; gameStatus: string; playerId: string; name: string; email: string; currentRound: number; phase: PlayerPhase }> = [];
     for (const game of Array.from(this.games.values())) {
       for (const player of Object.values(game.players)) {
         result.push({
@@ -438,6 +454,7 @@ export class MemStorage implements IStorage {
           name: player.name,
           email: player.email,
           currentRound: player.currentRound,
+          phase: player.phase,
         });
       }
     }
@@ -469,14 +486,13 @@ export class MemStorage implements IStorage {
     }> = [];
 
     for (const game of Array.from(this.games.values())) {
-      const round = game.currentRound;
       for (const player of Object.values(game.players)) {
         entries.push({
           name: player.name,
           email: player.email,
-          totalValue: portfolioValue(player, round),
+          totalValue: portfolioValue(player, player.currentRound),
           gameCode: game.code,
-          completedRound: round,
+          completedRound: player.currentRound,
           date: new Date().toISOString(),
         });
       }
@@ -484,14 +500,6 @@ export class MemStorage implements IStorage {
 
     entries.sort((a, b) => b.totalValue - a.totalValue);
     return entries.slice(0, 50).map((e, i) => ({ ...e, rank: i + 1 }));
-  }
-
-  async resetCurrentGame(): Promise<void> {
-    for (const game of Array.from(this.games.values())) {
-      if (game.status !== "finished") {
-        game.status = "finished";
-      }
-    }
   }
 }
 
@@ -522,10 +530,12 @@ export async function initStorage(): Promise<void> {
         name VARCHAR(30) NOT NULL,
         email VARCHAR(255) NOT NULL,
         current_round INTEGER NOT NULL DEFAULT 1,
+        phase VARCHAR(20) NOT NULL DEFAULT 'lobby',
         portfolio JSONB NOT NULL,
         value_history JSONB NOT NULL DEFAULT '[]'::jsonb,
         predictions JSONB NOT NULL DEFAULT '[]'::jsonb
       );
+      ALTER TABLE players ADD COLUMN IF NOT EXISTS phase VARCHAR(20) NOT NULL DEFAULT 'lobby';
     `);
     await pool.end();
 

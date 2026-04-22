@@ -46,11 +46,21 @@ export interface PlayerPortfolio {
   holdings: Holding[];
 }
 
+export type PlayerPhase =
+  | "lobby"
+  | "briefing"
+  | "research"
+  | "trading"
+  | "results"
+  | "takeaways"
+  | "finished";
+
 export interface PlayerState {
   id: string;
   name: string;
   email: string;
   currentRound: number;
+  phase: PlayerPhase;
   portfolio: PlayerPortfolio;
   // Value history: total portfolio value at end of each completed round
   valueHistory: number[];

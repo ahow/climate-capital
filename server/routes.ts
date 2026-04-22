@@ -173,42 +173,54 @@ export async function registerRoutes(
     },
   );
 
-  app.post("/api/games/:id/advance", async (req: Request, res: Response) => {
-    try {
-      const game = await storage.advanceRound(req.params.id as string);
-      return res.json(game);
-    } catch (err: any) {
-      return res.status(404).json({ message: err.message });
-    }
-  });
+  // Per-player advance (advances only this player's round/phase)
+  app.post(
+    "/api/games/:id/player/:playerId/advance",
+    async (req: Request, res: Response) => {
+      try {
+        const player = await storage.advancePlayer(
+          req.params.id as string,
+          req.params.playerId as string,
+        );
+        return res.json(player);
+      } catch (err: any) {
+        return res.status(404).json({ message: err.message });
+      }
+    },
+  );
 
-  app.post("/api/games/:id/phase", async (req: Request, res: Response) => {
-    const schema = z.object({
-      phase: z.enum([
-        "lobby",
-        "briefing",
-        "research",
-        "trading",
-        "results",
-        "takeaways",
-        "finished",
-      ]),
-    });
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ message: parsed.error.message });
-    }
+  // Per-player phase transition
+  app.post(
+    "/api/games/:id/player/:playerId/phase",
+    async (req: Request, res: Response) => {
+      const schema = z.object({
+        phase: z.enum([
+          "lobby",
+          "briefing",
+          "research",
+          "trading",
+          "results",
+          "takeaways",
+          "finished",
+        ]),
+      });
+      const parsed = schema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: parsed.error.message });
+      }
 
-    try {
-      const game = await storage.setPhase(
-        req.params.id as string,
-        parsed.data.phase,
-      );
-      return res.json(game);
-    } catch (err: any) {
-      return res.status(404).json({ message: err.message });
-    }
-  });
+      try {
+        const player = await storage.setPlayerPhase(
+          req.params.id as string,
+          req.params.playerId as string,
+          parsed.data.phase,
+        );
+        return res.json(player);
+      } catch (err: any) {
+        return res.status(404).json({ message: err.message });
+      }
+    },
+  );
 
   app.get("/api/games/:id/leaderboard", async (req: Request, res: Response) => {
     try {
@@ -267,7 +279,8 @@ export async function registerRoutes(
     const game = await storage.getGame(req.params.id as string);
     if (!game) return res.status(404).json({ message: "Game not found" });
 
-    const round = game.currentRound;
+    const playerState = game.players[parsed.data.playerId];
+    const round = playerState?.currentRound ?? game.currentRound;
     const briefing = ROUND_BRIEFINGS.find((b) => b.round === round);
     const roundPeriod = briefing ? `${briefing.title} (${briefing.period})` : `Round ${round}`;
 
@@ -349,17 +362,34 @@ ${assetList}`;
     }
   });
 
-  // ── RESET GAME (admin) ──
-  app.post("/api/admin/reset", async (req: Request, res: Response) => {
-    if (req.query.password !== ADMIN_PASSWORD) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    try {
-      await storage.resetCurrentGame();
-      return res.json({ success: true, message: "All active games have been ended. The next join will create a fresh game." });
-    } catch (err: any) {
-      return res.status(500).json({ message: err.message });
-    }
+  // ── RESET SINGLE PLAYER (admin) ──
+  app.post(
+    "/api/admin/players/:playerId/reset",
+    async (req: Request, res: Response) => {
+      if (req.query.password !== ADMIN_PASSWORD) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const playerId = req.params.playerId as string;
+      try {
+        const allPlayers = await storage.getAllPlayers();
+        const playerRecord = allPlayers.find((p) => p.playerId === playerId);
+        if (!playerRecord) {
+          return res.status(404).json({ message: "Player not found" });
+        }
+        const player = await storage.resetPlayer(playerRecord.gameId, playerId);
+        return res.json({ success: true, player });
+      } catch (err: any) {
+        return res.status(500).json({ message: err.message });
+      }
+    },
+  );
+
+  // Deprecated global reset — returns 410 Gone
+  app.post("/api/admin/reset", (_req: Request, res: Response) => {
+    return res.status(410).json({
+      message:
+        "Global reset has been removed. Reset individual players via /api/admin/players/:playerId/reset.",
+    });
   });
 
   // ── ALL-TIME LEADERBOARD (public) ──

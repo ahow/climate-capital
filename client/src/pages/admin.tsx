@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Trash2, ArrowLeft, RefreshCw, Trophy, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { PlayerPhase } from "@shared/schema";
 import {
   Table,
   TableBody,
@@ -20,6 +21,7 @@ interface PlayerRecord {
   name: string;
   email: string;
   currentRound: number;
+  phase: PlayerPhase;
 }
 
 const ADMIN_PASSWORD = "BeckhamIsBest";
@@ -33,8 +35,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [resetting, setResetting] = useState(false);
-  const [resetMessage, setResetMessage] = useState("");
+  const [resettingId, setResettingId] = useState<string | null>(null);
 
   const handleLogin = () => {
     if (passwordInput === ADMIN_PASSWORD) {
@@ -84,23 +85,28 @@ export default function AdminPage() {
     }
   };
 
-  const handleReset = async () => {
-    if (!window.confirm("End all active games? This will:\n\n• Finish the current game session\n• The next person to join will start a brand new game\n• Existing scores are preserved on the leaderboard\n\nContinue?")) return;
-    setResetting(true);
-    setResetMessage("");
+  const handleResetPlayer = async (playerId: string, playerName: string) => {
+    if (
+      !window.confirm(
+        `Reset player "${playerName}"?\n\nThis will put them back in the lobby with $100M cash and clear their portfolio and history. Other players are not affected.`,
+      )
+    )
+      return;
+    setResettingId(playerId);
     try {
-      const res = await fetch(`/api/admin/reset?password=${encodeURIComponent(ADMIN_PASSWORD)}`, { method: "POST" });
+      const res = await fetch(
+        `/api/admin/players/${encodeURIComponent(playerId)}/reset?password=${encodeURIComponent(ADMIN_PASSWORD)}`,
+        { method: "POST" },
+      );
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.message ?? "Reset failed");
       }
-      const data = await res.json();
-      setResetMessage(data.message ?? "Games reset successfully.");
       await fetchPlayers(ADMIN_PASSWORD);
     } catch (err: any) {
       setError(err.message ?? "Reset failed");
     } finally {
-      setResetting(false);
+      setResettingId(null);
     }
   };
 
@@ -202,21 +208,7 @@ export default function AdminPage() {
               {players.length} total
             </p>
           </div>
-          <Button
-            onClick={handleReset}
-            disabled={resetting}
-            className="bg-[#C4372C] text-white hover:bg-[#A02E24] rounded-[10px]"
-          >
-            <RotateCcw className={`h-4 w-4 mr-2 ${resetting ? "animate-spin" : ""}`} />
-            New Game
-          </Button>
         </div>
-
-        {resetMessage && (
-          <div className="rounded-md border border-[#00875A]/30 bg-[#00875A]/5 px-4 py-3 text-sm text-[#00875A]">
-            {resetMessage}
-          </div>
-        )}
 
         {error && (
           <div className="rounded-md border border-[#C4372C]/30 bg-[#C4372C]/5 px-4 py-3 text-sm text-[#C4372C]">
@@ -240,8 +232,8 @@ export default function AdminPage() {
                   <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Name</TableHead>
                   <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Email</TableHead>
                   <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Game Code</TableHead>
-                  <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Status</TableHead>
                   <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Round</TableHead>
+                  <TableHead className="text-white text-xs uppercase tracking-wider font-semibold">Phase</TableHead>
                   <TableHead className="text-white text-xs uppercase tracking-wider font-semibold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -254,30 +246,44 @@ export default function AdminPage() {
                     <TableCell className="font-medium text-sm text-[#001E41]">{player.name}</TableCell>
                     <TableCell className="text-sm text-[#494949]">{player.email}</TableCell>
                     <TableCell className="font-mono text-sm text-[#001E41]">{player.gameCode}</TableCell>
+                    <TableCell className="text-sm text-[#001E41]">{player.currentRound}</TableCell>
                     <TableCell className="text-sm">
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                          player.gameStatus === "finished"
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                          player.phase === "finished"
                             ? "bg-[#F4F6F9] text-[#494949]"
-                            : player.gameStatus === "lobby"
+                            : player.phase === "lobby"
                             ? "bg-[#0074B7]/10 text-[#0074B7]"
                             : "bg-[#00875A]/10 text-[#00875A]"
                         }`}
                       >
-                        {player.gameStatus}
+                        {player.phase}
                       </span>
                     </TableCell>
-                    <TableCell className="text-sm text-[#001E41]">{player.currentRound}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-[#C4372C] hover:text-[#C4372C] hover:bg-[#C4372C]/10"
-                        disabled={deletingId === player.playerId}
-                        onClick={() => handleDelete(player.playerId, player.name)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-[#0074B7]/40 text-[#0074B7] hover:bg-[#0074B7]/10 hover:text-[#0074B7]"
+                          disabled={resettingId === player.playerId}
+                          onClick={() => handleResetPlayer(player.playerId, player.name)}
+                        >
+                          <RotateCcw
+                            className={`h-3.5 w-3.5 mr-1 ${resettingId === player.playerId ? "animate-spin" : ""}`}
+                          />
+                          Reset
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#C4372C] hover:text-[#C4372C] hover:bg-[#C4372C]/10"
+                          disabled={deletingId === player.playerId}
+                          onClick={() => handleDelete(player.playerId, player.name)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

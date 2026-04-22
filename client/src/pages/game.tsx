@@ -111,7 +111,10 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
 
   const advanceMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", `/api/games/${gameId}/advance`);
+      const res = await apiRequest(
+        "POST",
+        `/api/games/${gameId}/player/${playerId}/advance`,
+      );
       return res.json();
     },
     onSuccess: () => {
@@ -123,11 +126,15 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
 
   const phaseMutation = useMutation({
     mutationFn: async (phase: string) => {
-      const res = await apiRequest("POST", `/api/games/${gameId}/phase`, { phase });
+      const res = await apiRequest(
+        "POST",
+        `/api/games/${gameId}/player/${playerId}/phase`,
+        { phase },
+      );
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/games", gameId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "player", playerId] });
     },
   });
 
@@ -142,8 +149,8 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
     );
   }
 
-  const phase = game.status;
-  const round = game.currentRound;
+  const phase = player.phase;
+  const round = player.currentRound;
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -472,7 +479,7 @@ function TradingPhase({
   const [tradeAmount, setTradeAmount] = useState(1);
   const [tradeAction, setTradeAction] = useState<"buy" | "sell">("buy");
   const [filter, setFilter] = useState("all");
-  const round = game.currentRound;
+  const round = player.currentRound;
 
   const submitMutation = useMutation({
     mutationFn: async (trades: Trade[]) => {
@@ -1440,7 +1447,7 @@ function FinishedPhase({
 
   const finalValue = player.valueHistory.length > 0
     ? player.valueHistory[player.valueHistory.length - 1]
-    : getPortfolioValue(player, assets, game.currentRound);
+    : getPortfolioValue(player, assets, player.currentRound);
 
   const startingValue = 100_000_000;
   const years = 10; // 2015-2025
