@@ -162,9 +162,6 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
             <circle cx="14" cy="14" r="5" fill="#0074B7" />
           </svg>
           <span className="font-sans font-bold text-sm tracking-wide text-[#001E41]">CLIMATE CAPITAL</span>
-          <span className="hidden sm:inline-flex items-center rounded-md border border-[#D9DFE7] bg-white px-2 py-0.5 text-xs font-mono text-[#494949]">
-            {game.code}
-          </span>
         </div>
         <div className="flex items-center gap-4 text-sm">
           <span className="text-[#494949]">
@@ -182,13 +179,6 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
       {/* Phase content */}
       <main className="flex-1 overflow-auto">
         <AnimatePresence mode="wait">
-          {phase === "lobby" && (
-            <LobbyPhase
-              key="lobby"
-              game={game}
-              onStart={() => phaseMutation.mutate("briefing")}
-            />
-          )}
           {phase === "briefing" && (
             <BriefingPhase
               key="briefing"
@@ -279,49 +269,6 @@ function getHoldingValue(h: Holding, assets: GameAsset[], round: number): number
   const asset = assets.find((a) => a.id === h.assetId);
   if (!asset) return 0;
   return h.units * getAssetPrice(asset, round);
-}
-
-// ── Lobby Phase ──
-
-function LobbyPhase({ game, onStart }: { game: GameSession; onStart: () => void }) {
-  const playerList = Object.values(game.players);
-  return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="flex flex-col items-center justify-center min-h-[80vh] p-8 bg-white"
-    >
-      <div className="max-w-md w-full">
-        <div className="text-center mb-6">
-          <h2 className="font-sans font-bold text-2xl text-[#001E41]">Game Lobby</h2>
-          <div className="mx-auto mt-3 h-1 w-12 bg-[#0074B7]" aria-hidden />
-          <p className="text-sm text-[#494949] mt-4">
-            Share code <span className="font-mono font-bold text-[#0074B7] text-lg tracking-wider">{game.code}</span> to invite players
-          </p>
-        </div>
-        <div className="bg-white border border-[#D9DFE7] rounded-xl p-6 space-y-5">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider font-semibold text-[#494949]">Players ({playerList.length})</p>
-            <div className="space-y-1.5">
-              {playerList.map((p) => (
-                <div key={p.id} className="flex items-center gap-2 py-2 px-3 rounded-md bg-[#F4F6F9]">
-                  <div className="h-2 w-2 rounded-full bg-[#00875A]" />
-                  <span className="text-sm font-medium text-[#001E41]">{p.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <Button
-            data-testid="start-game-btn"
-            className="w-full bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px] h-11"
-            size="lg"
-            onClick={onStart}
-          >
-            Start Game <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      </div>
-    </motion.div>
-  );
 }
 
 // ── Breaking News Ticker ──

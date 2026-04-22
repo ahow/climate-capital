@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -10,10 +10,21 @@ import { apiRequest } from "@/lib/queryClient";
 
 export default function Home() {
   const [, navigate] = useLocation();
-  const { setGameSession } = useGame();
+  const { gameId, playerId, setGameSession } = useGame();
   const { toast } = useToast();
   const [playerName, setPlayerName] = useState("");
   const [email, setEmail] = useState("");
+  const [joined, setJoined] = useState(false);
+
+  // If a session is already active (or just became active), go to /game.
+  // Doing navigation in an effect rather than in onSuccess guarantees the
+  // GameProvider state is committed before the /game page mounts, so the
+  // GamePage's own redirect-if-no-session guard never fires.
+  useEffect(() => {
+    if (joined && gameId && playerId) {
+      navigate("/game");
+    }
+  }, [joined, gameId, playerId, navigate]);
 
   const joinMutation = useMutation({
     mutationFn: async ({ playerName, email }: { playerName: string; email: string }) => {
@@ -25,7 +36,7 @@ export default function Home() {
       if (data.isReconnect) {
         toast({ title: "Welcome back!", description: "You've been reconnected to your game." });
       }
-      navigate("/game");
+      setJoined(true);
     },
   });
 

@@ -62,12 +62,15 @@ function portfolioValue(player: PlayerState, round: number): number {
 }
 
 function rowToPlayer(row: typeof players.$inferSelect): PlayerState {
+  const rawPhase = ((row as any).phase ?? "briefing") as PlayerPhase;
+  // Legacy rows saved with phase "lobby" should be treated as "briefing"
+  const phase: PlayerPhase = rawPhase === "lobby" ? "briefing" : rawPhase;
   return {
     id: row.id,
     name: row.name,
     email: row.email,
     currentRound: row.currentRound,
-    phase: ((row as any).phase ?? "lobby") as PlayerPhase,
+    phase,
     portfolio: row.portfolio as PlayerState["portfolio"],
     valueHistory: (row.valueHistory ?? []) as number[],
     predictions: (row.predictions ?? []) as PlayerState["predictions"],
@@ -176,7 +179,7 @@ export class DbStorage implements IStorage {
         name: playerName,
         email,
         currentRound: 1,
-        phase: "lobby",
+        phase: "briefing",
         portfolio: { cash: STARTING_CASH, holdings: [] },
         valueHistory: [],
         predictions: [],
@@ -339,7 +342,7 @@ export class DbStorage implements IStorage {
       .update(players)
       .set({
         currentRound: 1,
-        phase: "lobby",
+        phase: "briefing",
         portfolio: { cash: STARTING_CASH, holdings: [] },
         valueHistory: [],
         predictions: [],
@@ -531,7 +534,11 @@ export class DbStorage implements IStorage {
       .from(players)
       .innerJoin(games, eq(players.gameId, games.id));
 
-    return rows.map((r) => ({ ...r, phase: (r.phase ?? "lobby") as PlayerPhase }));
+    return rows.map((r) => {
+      const rawPhase = (r.phase ?? "briefing") as PlayerPhase;
+      const phase: PlayerPhase = rawPhase === "lobby" ? "briefing" : rawPhase;
+      return { ...r, phase };
+    });
   }
 
   async deletePlayer(gameId: string, playerId: string): Promise<void> {

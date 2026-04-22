@@ -135,7 +135,7 @@ export class MemStorage implements IStorage {
       name: playerName,
       email,
       currentRound: 1,
-      phase: "lobby",
+      phase: "briefing",
       portfolio: {
         cash: STARTING_CASH,
         holdings: [],
@@ -277,7 +277,7 @@ export class MemStorage implements IStorage {
     const player = game.players[playerId];
     if (!player) throw new Error("Player not found");
     player.currentRound = 1;
-    player.phase = "lobby";
+    player.phase = "briefing";
     player.portfolio = { cash: STARTING_CASH, holdings: [] };
     player.valueHistory = [];
     player.predictions = [];
@@ -530,12 +530,14 @@ export async function initStorage(): Promise<void> {
         name VARCHAR(30) NOT NULL,
         email VARCHAR(255) NOT NULL,
         current_round INTEGER NOT NULL DEFAULT 1,
-        phase VARCHAR(20) NOT NULL DEFAULT 'lobby',
+        phase VARCHAR(20) NOT NULL DEFAULT 'briefing',
         portfolio JSONB NOT NULL,
         value_history JSONB NOT NULL DEFAULT '[]'::jsonb,
         predictions JSONB NOT NULL DEFAULT '[]'::jsonb
       );
-      ALTER TABLE players ADD COLUMN IF NOT EXISTS phase VARCHAR(20) NOT NULL DEFAULT 'lobby';
+      ALTER TABLE players ADD COLUMN IF NOT EXISTS phase VARCHAR(20) NOT NULL DEFAULT 'briefing';
+      ALTER TABLE players ALTER COLUMN phase SET DEFAULT 'briefing';
+      UPDATE players SET phase = 'briefing' WHERE phase = 'lobby';
     `);
     await pool.end();
 

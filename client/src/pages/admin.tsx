@@ -88,7 +88,7 @@ export default function AdminPage() {
   const handleResetPlayer = async (playerId: string, playerName: string) => {
     if (
       !window.confirm(
-        `Reset player "${playerName}"?\n\nThis will put them back in the lobby with $100M cash and clear their portfolio and history. Other players are not affected.`,
+        `Reset player "${playerName}"?\n\nThis will put them back at the Round 1 briefing with $100M cash and clear their portfolio and history. Other players are not affected.`,
       )
     )
       return;
