@@ -18,6 +18,7 @@ import { useGame } from "@/contexts/GameContext";
 import { apiRequest } from "@/lib/queryClient";
 import type { GameSession, PlayerState, GameAsset, RoundBriefing, RoundTakeaway, Holding, Trade } from "@shared/schema";
 import { ROUND_BRIEFINGS } from "@shared/gameData";
+import { VideoBriefing, VideoClosing } from "@/components/VideoBriefing";
 
 const AWARD_ICONS: Record<string, typeof Trophy> = {
   trophy: Trophy, "trending-up": TrendingUp, flame: Flame,
@@ -224,6 +225,7 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
               key="takeaways"
               round={round}
               gameId={gameId}
+              playerId={playerId}
               onNext={() => advanceMutation.mutate()}
               isLastRound={round >= game.maxRounds}
             />
@@ -330,6 +332,10 @@ function BriefingPhase({ round, onContinue }: { round: number; onContinue: () =>
   const newsHeadlines: string[] =
     briefing.newsHeadlines ?? localBriefing?.newsHeadlines ?? [];
 
+  const textBriefing = (
+    <BriefingTextBody briefing={briefing} onContinue={onContinue} />
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -337,7 +343,7 @@ function BriefingPhase({ round, onContinue }: { round: number; onContinue: () =>
     >
       {/* Navy hero */}
       <div className="bg-[#001E41] text-white">
-        <div className="max-w-3xl mx-auto px-6 pt-12 pb-10">
+        <div className="max-w-3xl mx-auto px-6 pt-12 pb-6">
           <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A8D0E6] mb-3">
             Round {briefing.round} &nbsp;·&nbsp; Briefing
           </span>
@@ -346,62 +352,81 @@ function BriefingPhase({ round, onContinue }: { round: number; onContinue: () =>
           </h2>
           <div className="mt-4 h-1 w-16 bg-[#0074B7]" aria-hidden />
           <p className="mt-5 text-base text-white/80">{briefing.period}</p>
+
+          {/* Video briefing slot */}
+          <div className="mt-6">
+            <VideoBriefing
+              round={round}
+              fallbackContent={null}
+            />
+          </div>
         </div>
         {/* News ticker at bottom of hero */}
         <NewsTicker headlines={newsHeadlines} />
       </div>
 
-      {/* Body on cool-grey surface */}
-      <div className="bg-[#F4F6F9] pb-12">
-        <div className="max-w-3xl mx-auto px-6 py-10 space-y-6">
-          <div>
-            <h3 className="font-sans font-semibold text-sm uppercase tracking-wider text-[#494949] mb-3">
-              Context
-            </h3>
-            <div className="space-y-2">
-              {briefing.contextBullets.map((bullet, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
-                  className="flex gap-3 p-4 rounded-lg bg-white border border-[#D9DFE7]"
-                >
-                  <ChevronRight className="h-4 w-4 text-[#0074B7] mt-0.5 shrink-0" />
-                  <p className="text-sm leading-relaxed text-[#494949]">{bullet}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 + briefing.contextBullets.length * 0.1 }}
-            className="bg-white border-l-4 border-[#0074B7] border-y border-r border-[#D9DFE7] rounded-r-lg p-5"
-          >
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0074B7] mb-1">Key question</p>
-            <p className="text-base font-medium text-[#001E41] leading-snug">{briefing.keyQuestion}</p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 + briefing.contextBullets.length * 0.1 }}
-            className="flex justify-center pt-2"
-          >
-            <Button
-              data-testid="begin-trading-btn"
-              size="lg"
-              onClick={onContinue}
-              className="gap-2 bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px] px-6 h-11"
-            >
-              Begin Trading <BarChart3 className="h-4 w-4" />
-            </Button>
-          </motion.div>
-        </div>
-      </div>
+      {textBriefing}
     </motion.div>
+  );
+}
+
+function BriefingTextBody({
+  briefing,
+  onContinue,
+}: {
+  briefing: BriefingWithNews;
+  onContinue: () => void;
+}) {
+  return (
+    <div className="bg-[#F4F6F9] pb-12">
+      <div className="max-w-3xl mx-auto px-6 py-10 space-y-6">
+        <div>
+          <h3 className="font-sans font-semibold text-sm uppercase tracking-wider text-[#494949] mb-3">
+            Context
+          </h3>
+          <div className="space-y-2">
+            {briefing.contextBullets.map((bullet, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
+                className="flex gap-3 p-4 rounded-lg bg-white border border-[#D9DFE7]"
+              >
+                <ChevronRight className="h-4 w-4 text-[#0074B7] mt-0.5 shrink-0" />
+                <p className="text-sm leading-relaxed text-[#494949]">{bullet}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 + briefing.contextBullets.length * 0.1 }}
+          className="bg-white border-l-4 border-[#0074B7] border-y border-r border-[#D9DFE7] rounded-r-lg p-5"
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0074B7] mb-1">Key question</p>
+          <p className="text-base font-medium text-[#001E41] leading-snug">{briefing.keyQuestion}</p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 + briefing.contextBullets.length * 0.1 }}
+          className="flex justify-center pt-2"
+        >
+          <Button
+            data-testid="begin-trading-btn"
+            size="lg"
+            onClick={onContinue}
+            className="gap-2 bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px] px-6 h-11"
+          >
+            Begin Trading <BarChart3 className="h-4 w-4" />
+          </Button>
+        </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -1217,9 +1242,9 @@ function PortfolioHeatmap({
 // ── Takeaways Phase ──
 
 function TakeawaysPhase({
-  round, gameId, onNext, isLastRound,
+  round, gameId, playerId, onNext, isLastRound,
 }: {
-  round: number; gameId: string; onNext: () => void; isLastRound: boolean;
+  round: number; gameId: string; playerId: string; onNext: () => void; isLastRound: boolean;
 }) {
   const { data: takeaways } = useQuery<RoundTakeaway>({
     queryKey: ["/api/rounds", round, "takeaways"],
@@ -1256,6 +1281,10 @@ function TakeawaysPhase({
         <h2 className="font-sans font-bold text-3xl text-[#001E41]">Round {round} Takeaways</h2>
         <div className="mx-auto mt-3 h-1 w-12 bg-[#0074B7]" aria-hidden />
       </div>
+
+      {isLastRound && (
+        <VideoClosing playerId={playerId} fallbackContent={null} />
+      )}
 
       <div className="space-y-3">
         {takeaways.takeaways.map((t, i) => (

@@ -5,6 +5,9 @@ import type {
   PlayerPhase,
   Holding,
   Trade,
+  RoundBriefingVideoRecord,
+  ClosingVideoRecord,
+  VideoStatus,
 } from "@shared/schema";
 import {
   GAME_ASSETS,
@@ -80,10 +83,29 @@ export interface IStorage {
     completedRound: number;
     date: string;
   }>>;
+  getRoundBriefingVideo(round: number): Promise<RoundBriefingVideoRecord | undefined>;
+  createOrUpdateRoundBriefingVideo(
+    round: number,
+    fields: Partial<Omit<RoundBriefingVideoRecord, "roundNumber" | "createdAt" | "updatedAt">>,
+  ): Promise<RoundBriefingVideoRecord>;
+  getClosingVideo(playerId: string): Promise<ClosingVideoRecord | undefined>;
+  createOrUpdateClosingVideo(
+    playerId: string,
+    fields: Partial<Omit<ClosingVideoRecord, "playerId" | "createdAt" | "updatedAt">>,
+  ): Promise<ClosingVideoRecord>;
+  findVideoByVideoId(
+    videoId: string,
+  ): Promise<
+    | { kind: "briefing"; record: RoundBriefingVideoRecord }
+    | { kind: "closing"; record: ClosingVideoRecord }
+    | undefined
+  >;
 }
 
 export class MemStorage implements IStorage {
   private games: Map<string, GameSession> = new Map();
+  private briefingVideos: Map<number, RoundBriefingVideoRecord> = new Map();
+  private closingVideos: Map<string, ClosingVideoRecord> = new Map();
 
   async getOrCreateGame(): Promise<GameSession> {
     // Return first non-finished game, or create a new one
@@ -501,6 +523,68 @@ export class MemStorage implements IStorage {
     entries.sort((a, b) => b.totalValue - a.totalValue);
     return entries.slice(0, 50).map((e, i) => ({ ...e, rank: i + 1 }));
   }
+
+  async getRoundBriefingVideo(round: number): Promise<RoundBriefingVideoRecord | undefined> {
+    return this.briefingVideos.get(round);
+  }
+
+  async createOrUpdateRoundBriefingVideo(
+    round: number,
+    fields: Partial<Omit<RoundBriefingVideoRecord, "roundNumber" | "createdAt" | "updatedAt">>,
+  ): Promise<RoundBriefingVideoRecord> {
+    const existing = this.briefingVideos.get(round);
+    const now = Date.now();
+    const next: RoundBriefingVideoRecord = {
+      roundNumber: round,
+      videoId: fields.videoId ?? existing?.videoId ?? null,
+      videoUrl: fields.videoUrl ?? existing?.videoUrl ?? null,
+      status: (fields.status ?? existing?.status ?? "pending") as VideoStatus,
+      failureMessage: fields.failureMessage ?? existing?.failureMessage ?? null,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    };
+    this.briefingVideos.set(round, next);
+    return next;
+  }
+
+  async getClosingVideo(playerId: string): Promise<ClosingVideoRecord | undefined> {
+    return this.closingVideos.get(playerId);
+  }
+
+  async createOrUpdateClosingVideo(
+    playerId: string,
+    fields: Partial<Omit<ClosingVideoRecord, "playerId" | "createdAt" | "updatedAt">>,
+  ): Promise<ClosingVideoRecord> {
+    const existing = this.closingVideos.get(playerId);
+    const now = Date.now();
+    const next: ClosingVideoRecord = {
+      playerId,
+      videoId: fields.videoId ?? existing?.videoId ?? null,
+      videoUrl: fields.videoUrl ?? existing?.videoUrl ?? null,
+      status: (fields.status ?? existing?.status ?? "pending") as VideoStatus,
+      failureMessage: fields.failureMessage ?? existing?.failureMessage ?? null,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    };
+    this.closingVideos.set(playerId, next);
+    return next;
+  }
+
+  async findVideoByVideoId(
+    videoId: string,
+  ): Promise<
+    | { kind: "briefing"; record: RoundBriefingVideoRecord }
+    | { kind: "closing"; record: ClosingVideoRecord }
+    | undefined
+  > {
+    for (const record of Array.from(this.briefingVideos.values())) {
+      if (record.videoId === videoId) return { kind: "briefing", record };
+    }
+    for (const record of Array.from(this.closingVideos.values())) {
+      if (record.videoId === videoId) return { kind: "closing", record };
+    }
+    return undefined;
+  }
 }
 
 // Conditionally export DbStorage or MemStorage
@@ -538,6 +622,24 @@ export async function initStorage(): Promise<void> {
       ALTER TABLE players ADD COLUMN IF NOT EXISTS phase VARCHAR(20) NOT NULL DEFAULT 'briefing';
       ALTER TABLE players ALTER COLUMN phase SET DEFAULT 'briefing';
       UPDATE players SET phase = 'briefing' WHERE phase = 'lobby';
+      CREATE TABLE IF NOT EXISTS round_briefing_videos (
+        round_number INTEGER PRIMARY KEY,
+        video_id TEXT,
+        video_url TEXT,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        failure_message TEXT,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS closing_videos (
+        player_id UUID PRIMARY KEY REFERENCES players(id) ON DELETE CASCADE,
+        video_id TEXT,
+        video_url TEXT,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        failure_message TEXT,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      );
     `);
     await pool.end();
 

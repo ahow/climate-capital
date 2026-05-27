@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { eq, and } from "drizzle-orm";
 import pg from "pg";
-import { games, players } from "@shared/dbSchema";
+import { games, players, roundBriefingVideos, closingVideos } from "@shared/dbSchema";
 import type { IStorage } from "./storage";
 import type {
   GameSession,
@@ -9,6 +9,9 @@ import type {
   PlayerPhase,
   Trade,
   Holding,
+  RoundBriefingVideoRecord,
+  ClosingVideoRecord,
+  VideoStatus,
 } from "@shared/schema";
 import {
   GAME_ASSETS,
@@ -583,5 +586,155 @@ export class DbStorage implements IStorage {
 
     entries.sort((a, b) => b.totalValue - a.totalValue);
     return entries.slice(0, 50).map((e, i) => ({ ...e, rank: i + 1 }));
+  }
+
+  async getRoundBriefingVideo(round: number): Promise<RoundBriefingVideoRecord | undefined> {
+    const rows = await db
+      .select()
+      .from(roundBriefingVideos)
+      .where(eq(roundBriefingVideos.roundNumber, round))
+      .limit(1);
+    if (rows.length === 0) return undefined;
+    const r = rows[0];
+    return {
+      roundNumber: r.roundNumber,
+      videoId: r.videoId,
+      videoUrl: r.videoUrl,
+      status: r.status as VideoStatus,
+      failureMessage: r.failureMessage,
+      createdAt: r.createdAt.getTime(),
+      updatedAt: r.updatedAt.getTime(),
+    };
+  }
+
+  async createOrUpdateRoundBriefingVideo(
+    round: number,
+    fields: Partial<Omit<RoundBriefingVideoRecord, "roundNumber" | "createdAt" | "updatedAt">>,
+  ): Promise<RoundBriefingVideoRecord> {
+    const existing = await this.getRoundBriefingVideo(round);
+    if (existing) {
+      await db
+        .update(roundBriefingVideos)
+        .set({
+          videoId: fields.videoId !== undefined ? fields.videoId : existing.videoId,
+          videoUrl: fields.videoUrl !== undefined ? fields.videoUrl : existing.videoUrl,
+          status: (fields.status ?? existing.status) as string,
+          failureMessage:
+            fields.failureMessage !== undefined ? fields.failureMessage : existing.failureMessage,
+          updatedAt: new Date(),
+        })
+        .where(eq(roundBriefingVideos.roundNumber, round));
+    } else {
+      await db.insert(roundBriefingVideos).values({
+        roundNumber: round,
+        videoId: fields.videoId ?? null,
+        videoUrl: fields.videoUrl ?? null,
+        status: (fields.status ?? "pending") as string,
+        failureMessage: fields.failureMessage ?? null,
+      });
+    }
+    const updated = await this.getRoundBriefingVideo(round);
+    if (!updated) throw new Error("Failed to upsert round briefing video");
+    return updated;
+  }
+
+  async getClosingVideo(playerId: string): Promise<ClosingVideoRecord | undefined> {
+    const rows = await db
+      .select()
+      .from(closingVideos)
+      .where(eq(closingVideos.playerId, playerId))
+      .limit(1);
+    if (rows.length === 0) return undefined;
+    const r = rows[0];
+    return {
+      playerId: r.playerId,
+      videoId: r.videoId,
+      videoUrl: r.videoUrl,
+      status: r.status as VideoStatus,
+      failureMessage: r.failureMessage,
+      createdAt: r.createdAt.getTime(),
+      updatedAt: r.updatedAt.getTime(),
+    };
+  }
+
+  async createOrUpdateClosingVideo(
+    playerId: string,
+    fields: Partial<Omit<ClosingVideoRecord, "playerId" | "createdAt" | "updatedAt">>,
+  ): Promise<ClosingVideoRecord> {
+    const existing = await this.getClosingVideo(playerId);
+    if (existing) {
+      await db
+        .update(closingVideos)
+        .set({
+          videoId: fields.videoId !== undefined ? fields.videoId : existing.videoId,
+          videoUrl: fields.videoUrl !== undefined ? fields.videoUrl : existing.videoUrl,
+          status: (fields.status ?? existing.status) as string,
+          failureMessage:
+            fields.failureMessage !== undefined ? fields.failureMessage : existing.failureMessage,
+          updatedAt: new Date(),
+        })
+        .where(eq(closingVideos.playerId, playerId));
+    } else {
+      await db.insert(closingVideos).values({
+        playerId,
+        videoId: fields.videoId ?? null,
+        videoUrl: fields.videoUrl ?? null,
+        status: (fields.status ?? "pending") as string,
+        failureMessage: fields.failureMessage ?? null,
+      });
+    }
+    const updated = await this.getClosingVideo(playerId);
+    if (!updated) throw new Error("Failed to upsert closing video");
+    return updated;
+  }
+
+  async findVideoByVideoId(
+    videoId: string,
+  ): Promise<
+    | { kind: "briefing"; record: RoundBriefingVideoRecord }
+    | { kind: "closing"; record: ClosingVideoRecord }
+    | undefined
+  > {
+    const briefingRows = await db
+      .select()
+      .from(roundBriefingVideos)
+      .where(eq(roundBriefingVideos.videoId, videoId))
+      .limit(1);
+    if (briefingRows.length > 0) {
+      const r = briefingRows[0];
+      return {
+        kind: "briefing",
+        record: {
+          roundNumber: r.roundNumber,
+          videoId: r.videoId,
+          videoUrl: r.videoUrl,
+          status: r.status as VideoStatus,
+          failureMessage: r.failureMessage,
+          createdAt: r.createdAt.getTime(),
+          updatedAt: r.updatedAt.getTime(),
+        },
+      };
+    }
+    const closingRows = await db
+      .select()
+      .from(closingVideos)
+      .where(eq(closingVideos.videoId, videoId))
+      .limit(1);
+    if (closingRows.length > 0) {
+      const r = closingRows[0];
+      return {
+        kind: "closing",
+        record: {
+          playerId: r.playerId,
+          videoId: r.videoId,
+          videoUrl: r.videoUrl,
+          status: r.status as VideoStatus,
+          failureMessage: r.failureMessage,
+          createdAt: r.createdAt.getTime(),
+          updatedAt: r.updatedAt.getTime(),
+        },
+      };
+    }
+    return undefined;
   }
 }

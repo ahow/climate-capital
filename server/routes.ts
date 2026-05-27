@@ -12,9 +12,32 @@ import {
   ROUND_TAKEAWAYS,
   PREDICTION_QUESTIONS,
   AWARDS,
+  buildClosingScript,
 } from "@shared/gameData";
 import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
+import crypto from "crypto";
+import { videoProvider } from "./heygen";
+
+function computePortfolioValue(
+  player: { portfolio: { cash: number; holdings: Array<{ assetId: string; units: number }> } },
+  round: number,
+): number {
+  let total = player.portfolio.cash;
+  for (const h of player.portfolio.holdings) {
+    const asset = GAME_ASSETS.find((a) => a.id === h.assetId);
+    if (!asset) continue;
+    const idx = round - 1;
+    const price =
+      idx < 0
+        ? asset.startPrice
+        : idx >= asset.roundPrices.length
+          ? asset.roundPrices[asset.roundPrices.length - 1]
+          : asset.roundPrices[idx];
+    total += h.units * price;
+  }
+  return total;
+}
 
 function calculateBenchmark(): number[] {
   const n = GAME_ASSETS.length; // 22
@@ -324,6 +347,234 @@ ${assetList}`;
     } catch (err: any) {
       console.error("Anthropic API error:", err.message);
       return res.status(500).json({ message: "Research analyst temporarily unavailable. Please try again or proceed to trading." });
+    }
+  });
+
+  // ── Video briefing endpoints (cached per round) ──
+
+  app.get("/api/videos/briefing/:round", async (req: Request, res: Response) => {
+    const round = parseInt(req.params.round as string, 10);
+    if (!Number.isFinite(round) || round < 1 || round > 8) {
+      return res.status(400).json({ message: "Invalid round" });
+    }
+
+    if (!videoProvider.isEnabled()) {
+      return res.json({ status: "disabled" });
+    }
+
+    try {
+      const existing = await storage.getRoundBriefingVideo(round);
+      if (existing) {
+        if (existing.status === "completed" && existing.videoUrl) {
+          return res.json({ status: "completed", videoUrl: existing.videoUrl });
+        }
+        if (existing.status === "failed") {
+          return res.json({ status: "failed" });
+        }
+        return res.json({ status: existing.status });
+      }
+
+      const briefing = ROUND_BRIEFINGS.find((b) => b.round === round);
+      const script = briefing?.videoScript;
+      if (!script) {
+        return res.json({ status: "disabled" });
+      }
+
+      await storage.createOrUpdateRoundBriefingVideo(round, { status: "pending" });
+
+      try {
+        const { videoId } = await videoProvider.generateVideo({
+          script,
+          callbackId: `briefing-round-${round}`,
+        });
+        await storage.createOrUpdateRoundBriefingVideo(round, {
+          videoId,
+          status: "processing",
+        });
+        return res.json({ status: "processing" });
+      } catch (err: any) {
+        console.error("HeyGen briefing generate error:", err.message);
+        await storage.createOrUpdateRoundBriefingVideo(round, {
+          status: "failed",
+          failureMessage: err.message,
+        });
+        return res.json({ status: "failed" });
+      }
+    } catch (err: any) {
+      console.error("briefing video error:", err.message);
+      return res.json({ status: "failed" });
+    }
+  });
+
+  app.post("/api/videos/closing/:playerId", async (req: Request, res: Response) => {
+    const playerId = req.params.playerId as string;
+
+    if (!videoProvider.isEnabled()) {
+      return res.json({ status: "disabled" });
+    }
+
+    try {
+      const allPlayers = await storage.getAllPlayers();
+      const ref = allPlayers.find((p) => p.playerId === playerId);
+      if (!ref) return res.status(404).json({ message: "Player not found" });
+
+      const player = await storage.getPlayer(ref.gameId, playerId);
+      if (!player) return res.status(404).json({ message: "Player not found" });
+
+      const existing = await storage.getClosingVideo(playerId);
+      if (existing) {
+        if (existing.status === "completed" && existing.videoUrl) {
+          return res.json({ status: "completed", videoUrl: existing.videoUrl });
+        }
+        if (existing.status === "failed") {
+          return res.json({ status: "failed" });
+        }
+        return res.json({ status: existing.status });
+      }
+
+      const finalValue =
+        player.valueHistory.length > 0
+          ? player.valueHistory[player.valueHistory.length - 1]
+          : computePortfolioValue(player, player.currentRound);
+
+      const holdings = player.portfolio.holdings
+        .map((h) => {
+          const asset = GAME_ASSETS.find((a) => a.id === h.assetId);
+          if (!asset) return null;
+          const round = player.currentRound;
+          const idx = round - 1;
+          const price =
+            idx < 0
+              ? asset.startPrice
+              : idx >= asset.roundPrices.length
+                ? asset.roundPrices[asset.roundPrices.length - 1]
+                : asset.roundPrices[idx];
+          return { name: asset.name, value: h.units * price };
+        })
+        .filter((x): x is { name: string; value: number } => x !== null)
+        .sort((a, b) => b.value - a.value);
+
+      const script = buildClosingScript(player.name, finalValue, STARTING_CASH, holdings);
+
+      await storage.createOrUpdateClosingVideo(playerId, { status: "pending" });
+
+      try {
+        const { videoId } = await videoProvider.generateVideo({
+          script,
+          callbackId: `closing-player-${playerId}`,
+        });
+        await storage.createOrUpdateClosingVideo(playerId, {
+          videoId,
+          status: "processing",
+        });
+        return res.json({ status: "processing" });
+      } catch (err: any) {
+        console.error("HeyGen closing generate error:", err.message);
+        await storage.createOrUpdateClosingVideo(playerId, {
+          status: "failed",
+          failureMessage: err.message,
+        });
+        return res.json({ status: "failed" });
+      }
+    } catch (err: any) {
+      console.error("closing video error:", err.message);
+      return res.json({ status: "failed" });
+    }
+  });
+
+  app.get("/api/videos/closing/:playerId", async (req: Request, res: Response) => {
+    const playerId = req.params.playerId as string;
+    if (!videoProvider.isEnabled()) {
+      return res.json({ status: "disabled" });
+    }
+    try {
+      const existing = await storage.getClosingVideo(playerId);
+      if (!existing) return res.json({ status: "not_started" });
+      if (existing.status === "completed" && existing.videoUrl) {
+        return res.json({ status: "completed", videoUrl: existing.videoUrl });
+      }
+      return res.json({ status: existing.status });
+    } catch (err: any) {
+      return res.json({ status: "failed" });
+    }
+  });
+
+  app.post("/api/webhooks/heygen", async (req: Request, res: Response) => {
+    try {
+      const secret = process.env.HEYGEN_WEBHOOK_SECRET;
+      if (secret) {
+        const signature =
+          (req.headers["x-heygen-signature"] as string) ||
+          (req.headers["heygen-signature"] as string) ||
+          (req.headers["x-signature"] as string);
+        const raw = (req as any).rawBody;
+        if (signature && raw) {
+          const computed = crypto
+            .createHmac("sha256", secret)
+            .update(raw)
+            .digest("hex");
+          // Permit "sha256=<hex>" or plain hex
+          const provided = signature.replace(/^sha256=/, "");
+          if (computed !== provided) {
+            console.warn("HeyGen webhook signature mismatch");
+            // Still return 200 to avoid retry storms; just don't process.
+            return res.status(200).json({ ok: false, reason: "bad_signature" });
+          }
+        }
+      }
+
+      const body = req.body ?? {};
+      const eventType: string | undefined = body.event_type ?? body.type;
+      const data = body.data ?? body;
+      const videoId: string | undefined = data?.video_id ?? body.video_id;
+      const videoUrl: string | undefined = data?.video_url ?? body.video_url;
+      const failureMessage: string | undefined =
+        data?.failure_message ?? body.failure_message ?? body.error;
+
+      if (!videoId) {
+        return res.status(200).json({ ok: false, reason: "missing_video_id" });
+      }
+
+      const found = await storage.findVideoByVideoId(videoId);
+      if (!found) {
+        return res.status(200).json({ ok: false, reason: "video_not_tracked" });
+      }
+
+      const success =
+        eventType === "avatar_video.success" ||
+        (!eventType && !!videoUrl) ||
+        eventType === "success";
+
+      if (success && videoUrl) {
+        if (found.kind === "briefing") {
+          await storage.createOrUpdateRoundBriefingVideo(found.record.roundNumber, {
+            status: "completed",
+            videoUrl,
+          });
+        } else {
+          await storage.createOrUpdateClosingVideo(found.record.playerId, {
+            status: "completed",
+            videoUrl,
+          });
+        }
+      } else {
+        if (found.kind === "briefing") {
+          await storage.createOrUpdateRoundBriefingVideo(found.record.roundNumber, {
+            status: "failed",
+            failureMessage: failureMessage ?? "Unknown failure",
+          });
+        } else {
+          await storage.createOrUpdateClosingVideo(found.record.playerId, {
+            status: "failed",
+            failureMessage: failureMessage ?? "Unknown failure",
+          });
+        }
+      }
+
+      return res.status(200).json({ ok: true });
+    } catch (err: any) {
+      console.error("heygen webhook error:", err.message);
+      return res.status(200).json({ ok: false });
     }
   });
 

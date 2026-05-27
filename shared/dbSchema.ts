@@ -32,3 +32,23 @@ export const players = pgTable("players", {
     .$type<Array<{ round: number; question: string; answer: string; correct: boolean }>>()
     .default([]),
 });
+
+export const roundBriefingVideos = pgTable("round_briefing_videos", {
+  roundNumber: integer("round_number").primaryKey(),
+  videoId: text("video_id"),
+  videoUrl: text("video_url"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  failureMessage: text("failure_message"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const closingVideos = pgTable("closing_videos", {
+  playerId: uuid("player_id").primaryKey().references(() => players.id),
+  videoId: text("video_id"),
+  videoUrl: text("video_url"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  failureMessage: text("failure_message"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

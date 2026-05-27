@@ -360,7 +360,10 @@ export const GAME_ASSETS: GameAsset[] = [
 // Extended briefing data used by the client ticker. The `newsHeadlines` field is
 // optional in the shared schema — it's added here for UI only and the server
 // returns the whole object so the client can render the ticker.
-export type RoundBriefingWithNews = RoundBriefing & { newsHeadlines?: string[] };
+export type RoundBriefingWithNews = RoundBriefing & {
+  newsHeadlines?: string[];
+  videoScript?: string;
+};
 
 export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
   {
@@ -376,6 +379,8 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "EU carbon allowances are trading at just €5–8/tonne — cheap but potentially a sleeping giant.",
     ],
     keyQuestion: "How aggressively should you bet on the Paris signal vs. the ongoing reality of fossil fuel dominance?",
+    videoScript:
+      "Good evening, and welcome to Climate Capital. The story this period is Paris. One hundred and ninety-six nations have signed an agreement to limit warming to well below two degrees. Markets are digesting the news: Appalachian Coal has filed for bankruptcy, while clean energy investment has hit a record three hundred and forty-nine billion dollars. Yet coal still generates forty percent of the world's electricity, and EU carbon allowances are trading near historic lows. The signal is here. The question for your fund: how aggressively do you act before the price catches up?",
     newsHeadlines: [
       "BREAKING: 196 nations sign Paris Climate Agreement — markets digest deal",
       "Coal stocks tumble: Peabody Energy files for Chapter 11 bankruptcy",
@@ -401,6 +406,8 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "ESG fund inflows continued growing despite US political headwinds.",
     ],
     keyQuestion: "Was Paris a false start, or is the US an outlier? Should you follow the politics or the policy machinery?",
+    videoScript:
+      "Welcome back. The political backdrop has shifted abruptly. The United States has announced its withdrawal from the Paris Agreement, and non-US renewable equities sold off fourteen percent in the twenty days after the election. Pipeline operators rallied nineteen percent in a single week. But while Washington pivots, Brussels accelerates. The EU has launched a sustainable finance action plan, and over one hundred chief executives representing trillions in market cap have endorsed the TCFD disclosures. ESG fund inflows continue to grow. Your call: follow the politics, or follow the policy machinery being built behind the scenes.",
     newsHeadlines: [
       "BREAKING: Trump announces US withdrawal from Paris Agreement",
       "Non-US renewable stocks drop 14% in 20 days post-election",
@@ -425,6 +432,8 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "A major California utility files for bankruptcy (January 2019) after wildfire liabilities exceed $30 billion.",
     ],
     keyQuestion: "Is this the beginning of a structural shift in markets, or a sentiment-driven rally?",
+    videoScript:
+      "The green wave is building. Sustainable fund inflows have hit a record twenty point six billion dollars — nearly four times last year's figure. The EU Green Deal commits Europe to climate neutrality by twenty fifty. Renewables are now the cheapest source of electricity in most markets. But the period has also delivered a stark reminder of physical climate risk: WildFire Utility has filed for bankruptcy after thirty billion dollars in wildfire liabilities. PlantProtein Co debuted with one of the biggest IPO pops in two decades. Structural shift, or sentiment? Your portfolio decides.",
     newsHeadlines: [
       "BREAKING: PG&E files for bankruptcy — $30bn wildfire liabilities crush stock",
       "Beyond Meat IPO soars 163% on debut — biggest pop since 2000",
@@ -450,6 +459,8 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "A major plant-based meat company is now publicly traded and riding the alt-protein wave.",
     ],
     keyQuestion: "Are clean energy valuations justified by the green recovery, or is this a bubble forming?",
+    videoScript:
+      "An extraordinary period. The pandemic wiped thirty-four percent off broad equity markets in twenty-three trading days, and oil prices went negative for the first time in history. Governments responded with green recovery packages: the EU's NextGenerationEU fund alone earmarks more than a third of seven hundred and fifty billion euros for climate. The Global Clean Energy Index has returned one hundred and forty-two percent for the year. ElectraDrive has joined the broad market index, triggering one of the largest rebalancing trades on record. Valuations are stretched. The question is whether the green recovery justifies the price — or whether you are watching a bubble form.",
     newsHeadlines: [
       "BREAKING: WTI crude futures crash to -$37.63/barrel — negative for first time",
       "S&P 500 plunges 34% in 23 trading days as COVID-19 shuts global economy",
@@ -475,6 +486,8 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "EU carbon allowances surge past €50/tonne as the EU tightens the Emissions Trading System.",
     ],
     keyQuestion: "Everything climate looks like it only goes up. Take profits on the extraordinary rally, or ride the momentum?",
+    videoScript:
+      "Peak euphoria. COP26 has produced net zero pledges covering ninety percent of global GDP. EU carbon allowances have crossed fifty euros for the first time. Global ESG assets under management have reached thirty-five trillion dollars. SPAC mania is reshaping the EV landscape, and the voluntary carbon market is booming. But the cracks are visible: inflation has hit a forty-year high, central banks are signalling rate hikes, and Nordic Wind Power is already thirty percent off its peak. Everything climate looks like it only goes up. Your decision: take profits on this rally, or ride the momentum.",
     newsHeadlines: [
       "BREAKING: COP26 — 140+ nations make net zero pledges covering 90% of GDP",
       "Rivian IPO valued at $86bn on first day — bigger than Ford",
@@ -501,6 +514,8 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "EU carbon allowances hit an ALL-TIME HIGH of €105/tonne as the energy crisis highlights carbon dependence.",
     ],
     keyQuestion: "Is this the bottom for clean energy, or the beginning of a new fossil fuel era? And what about the IRA?",
+    videoScript:
+      "The energy crisis has rewritten the script. Russia's invasion of Ukraine has sent European gas prices up tenfold and pushed oil above one hundred and twenty dollars a barrel. Titan Petroleum has posted a profit of fifty-five point seven billion dollars — the largest ever recorded by a Western oil major. Fossil fuel equities returned sixty-four percent while broad markets fell eighteen. Clean energy has collapsed under rising rates and supply chain strain. And yet: EU carbon allowances have hit an all-time high of one hundred and five euros, and the Inflation Reduction Act has just committed three hundred and sixty-nine billion dollars to the transition. Is this the bottom for clean energy, or the dawn of a new fossil era?",
     newsHeadlines: [
       "BREAKING: Russia invades Ukraine — European gas prices spike 10x",
       "ExxonMobil posts $55.7bn profit — biggest ever by a Western oil major",
@@ -526,6 +541,8 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "The voluntary carbon market bifurcates sharply: premium credits hold value, generic credits collapse.",
     ],
     keyQuestion: "Is the climate investment thesis dead, or is this the buying opportunity of a generation?",
+    videoScript:
+      "A reality check has arrived. The anti-ESG backlash has driven US sustainable fund outflows to a record thirteen billion dollars, then nineteen and a half. Nordic Wind Power has announced five point six billion dollars in writedowns and the stock has halved. A major investigation has found that more than ninety percent of standard forestry-based carbon credits had no measurable climate impact. The voluntary carbon market has split sharply — premium credits hold their value while generic credits collapse. Meanwhile, the AI boom is pulling capital away from climate names. Is the climate investment thesis dead, or is this the buying opportunity of a generation?",
     newsHeadlines: [
       "BREAKING: Guardian investigation — 90%+ of Verra REDD+ credits 'phantom'",
       "Ørsted announces $5.6bn offshore wind writedown; stock falls 25%",
@@ -551,6 +568,8 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "EU carbon allowances stabilise around €70/tonne. The market anticipates regulatory evolution rather than collapse.",
     ],
     keyQuestion: "This is your final allocation. Where does climate investing go from here?",
+    videoScript:
+      "Your final round. A second Trump presidency has shifted the landscape again: clean energy indices fell eleven percent in election week, solar exchange-traded funds dropped fifteen, and stop-work orders have halted US offshore wind. Nordic Wind Power has cancelled its largest UK project. But more than eighty percent of Inflation Reduction Act projects sit in Republican districts, making full rollback politically difficult. And a new catalyst has emerged: GreenBridge Infrastructure has posted record results driven by AI data centre power demand. EU carbon allowances have stabilised around seventy euros. This is your last allocation. Where does climate investing go from here?",
     newsHeadlines: [
       "BREAKING: Trump wins second term — vows immediate Paris withdrawal",
       "Global Clean Energy Index falls -11% in election week; solar ETF -15%",
@@ -712,6 +731,47 @@ export interface Award {
   name: string;
   icon: string; // lucide icon name
   description: string;
+}
+
+// ── CLOSING VIDEO SCRIPT BUILDER ──
+
+/**
+ * Build a personalised ~100-word closing narration for the round-8 takeaways phase.
+ * Uses the existing pseudonymous asset names. No real company names.
+ */
+export function buildClosingScript(
+  playerName: string,
+  finalPortfolioValue: number,
+  startingValue: number,
+  top3Holdings: { name: string; value: number }[],
+): string {
+  const safeName = (playerName && playerName.trim()) || "Investor";
+  const startFmt = formatMillions(startingValue);
+  const endFmt = formatMillions(finalPortfolioValue);
+  const returnPct = ((finalPortfolioValue - startingValue) / startingValue) * 100;
+  const direction = returnPct >= 0 ? "gain" : "loss";
+  const pctStr = `${returnPct >= 0 ? "" : ""}${returnPct.toFixed(1)}%`;
+  const topNames = top3Holdings
+    .filter((h) => h.value > 0)
+    .slice(0, 3)
+    .map((h) => h.name);
+  let holdingsLine = "";
+  if (topNames.length === 3) {
+    holdingsLine = `Your largest allocations sat in ${topNames[0]}, ${topNames[1]}, and ${topNames[2]}.`;
+  } else if (topNames.length === 2) {
+    holdingsLine = `Your largest allocations sat in ${topNames[0]} and ${topNames[1]}.`;
+  } else if (topNames.length === 1) {
+    holdingsLine = `Your largest allocation sat in ${topNames[0]}.`;
+  } else {
+    holdingsLine = "Your fund ended the decade holding cash.";
+  }
+
+  return `${safeName}, the final bell has rung. Your Climate Capital fund started at ${startFmt} and finished at ${endFmt} — a ${Math.abs(returnPct).toFixed(1)}% ${direction} over eight rounds. ${holdingsLine} You navigated a decade that compressed Paris, the energy crisis, ESG backlash, and an AI-driven power boom into a single evening. In real markets these forces play out over decades, and the discipline you have shown — reading policy, technology, and demand together — is exactly what climate investing requires. Thank you for playing. The decarbonisation transition continues; your fund's story is now part of it.`;
+}
+
+function formatMillions(value: number): string {
+  if (Math.abs(value) >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)} billion`;
+  return `$${(value / 1_000_000).toFixed(1)} million`;
 }
 
 export const AWARDS: Award[] = [

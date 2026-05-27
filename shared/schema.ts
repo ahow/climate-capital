@@ -100,3 +100,24 @@ export const submitTradesSchema = z.object({
 export type JoinData = z.infer<typeof joinSchema>;
 export type Trade = z.infer<typeof tradeSchema>;
 export type SubmitTrades = z.infer<typeof submitTradesSchema>;
+
+// ── Video generation types ──
+
+export type VideoStatus = "pending" | "processing" | "completed" | "failed";
+
+export interface VideoRecord {
+  videoId: string | null;
+  videoUrl: string | null;
+  status: VideoStatus;
+  failureMessage: string | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface RoundBriefingVideoRecord extends VideoRecord {
+  roundNumber: number;
+}
+
+export interface ClosingVideoRecord extends VideoRecord {
+  playerId: string;
+}
