@@ -590,65 +590,107 @@ export class MemStorage implements IStorage {
 // Conditionally export DbStorage or MemStorage
 let storage: IStorage = new MemStorage();
 
-export async function initStorage(): Promise<void> {
-  if (process.env.DATABASE_URL) {
-    // Create tables if they don't exist
-    const pg = await import("pg");
-    const pool = new pg.default.Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    });
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS games (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        code VARCHAR(8) NOT NULL UNIQUE,
-        status VARCHAR(20) NOT NULL DEFAULT 'lobby',
-        current_round INTEGER NOT NULL DEFAULT 1,
-        max_rounds INTEGER NOT NULL DEFAULT 8,
-        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
-        phase_deadline TIMESTAMP
-      );
-      CREATE TABLE IF NOT EXISTS players (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        game_id UUID NOT NULL REFERENCES games(id),
-        name VARCHAR(30) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        current_round INTEGER NOT NULL DEFAULT 1,
-        phase VARCHAR(20) NOT NULL DEFAULT 'briefing',
-        portfolio JSONB NOT NULL,
-        value_history JSONB NOT NULL DEFAULT '[]'::jsonb,
-        predictions JSONB NOT NULL DEFAULT '[]'::jsonb
-      );
-      ALTER TABLE players ADD COLUMN IF NOT EXISTS phase VARCHAR(20) NOT NULL DEFAULT 'briefing';
-      ALTER TABLE players ALTER COLUMN phase SET DEFAULT 'briefing';
-      UPDATE players SET phase = 'briefing' WHERE phase = 'lobby';
-      CREATE TABLE IF NOT EXISTS round_briefing_videos (
-        round_number INTEGER PRIMARY KEY,
-        video_id TEXT,
-        video_url TEXT,
-        status VARCHAR(20) NOT NULL DEFAULT 'pending',
-        failure_message TEXT,
-        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
-        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS closing_videos (
-        player_id UUID PRIMARY KEY REFERENCES players(id) ON DELETE CASCADE,
-        video_id TEXT,
-        video_url TEXT,
-        status VARCHAR(20) NOT NULL DEFAULT 'pending',
-        failure_message TEXT,
-        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
-        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
-      );
-    `);
-    await pool.end();
+// Each migration runs as its own statement so that one failure doesn't
+// abort the rest of the batch (and so error messages are pinpointable).
+const MIGRATIONS: Array<{ name: string; sql: string }> = [
+  {
+    name: "create_games",
+    sql: `CREATE TABLE IF NOT EXISTS games (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      code VARCHAR(8) NOT NULL UNIQUE,
+      status VARCHAR(20) NOT NULL DEFAULT 'lobby',
+      current_round INTEGER NOT NULL DEFAULT 1,
+      max_rounds INTEGER NOT NULL DEFAULT 8,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      phase_deadline TIMESTAMP
+    )`,
+  },
+  {
+    name: "create_players",
+    sql: `CREATE TABLE IF NOT EXISTS players (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      game_id UUID NOT NULL REFERENCES games(id),
+      name VARCHAR(30) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      current_round INTEGER NOT NULL DEFAULT 1,
+      phase VARCHAR(20) NOT NULL DEFAULT 'briefing',
+      portfolio JSONB NOT NULL,
+      value_history JSONB NOT NULL DEFAULT '[]'::jsonb,
+      predictions JSONB NOT NULL DEFAULT '[]'::jsonb
+    )`,
+  },
+  {
+    name: "players_add_phase",
+    sql: `ALTER TABLE players ADD COLUMN IF NOT EXISTS phase VARCHAR(20) NOT NULL DEFAULT 'briefing'`,
+  },
+  {
+    name: "players_phase_default",
+    sql: `ALTER TABLE players ALTER COLUMN phase SET DEFAULT 'briefing'`,
+  },
+  {
+    name: "players_migrate_lobby_phase",
+    sql: `UPDATE players SET phase = 'briefing' WHERE phase = 'lobby'`,
+  },
+  {
+    name: "create_round_briefing_videos",
+    sql: `CREATE TABLE IF NOT EXISTS round_briefing_videos (
+      round_number INTEGER PRIMARY KEY,
+      video_id TEXT,
+      video_url TEXT,
+      status VARCHAR(20) NOT NULL DEFAULT 'pending',
+      failure_message TEXT,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    )`,
+  },
+  {
+    name: "create_closing_videos",
+    sql: `CREATE TABLE IF NOT EXISTS closing_videos (
+      player_id UUID PRIMARY KEY REFERENCES players(id) ON DELETE CASCADE,
+      video_id TEXT,
+      video_url TEXT,
+      status VARCHAR(20) NOT NULL DEFAULT 'pending',
+      failure_message TEXT,
+      created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+      updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+    )`,
+  },
+];
 
-    const { DbStorage } = await import("./dbStorage");
-    storage = new DbStorage();
-    console.log("Using PostgreSQL storage");
-  } else {
-    console.log("No DATABASE_URL set, using in-memory storage");
+export async function initStorage(): Promise<void> {
+  if (!process.env.DATABASE_URL) {
+    console.log("[storage] No DATABASE_URL set, using in-memory storage");
+    return;
   }
+
+  const pg = await import("pg");
+  const pool = new pg.default.Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  });
+
+  try {
+    for (const { name, sql } of MIGRATIONS) {
+      try {
+        await pool.query(sql);
+      } catch (err: any) {
+        // Log loudly so Heroku logs show the offending migration, then re-throw
+        // so the dyno crashes with a clear message rather than running with a
+        // half-migrated schema.
+        console.error(
+          `[storage] migration "${name}" failed:`,
+          err?.message ?? err,
+        );
+        throw err;
+      }
+    }
+  } finally {
+    await pool.end();
+  }
+
+  const { DbStorage } = await import("./dbStorage");
+  storage = new DbStorage();
+  console.log("[storage] Using PostgreSQL storage");
 }
 
 export { storage };

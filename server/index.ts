@@ -3,6 +3,21 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
+console.log("[boot] server starting", {
+  nodeEnv: process.env.NODE_ENV,
+  port: process.env.PORT,
+  hasHeygen: !!process.env.HEYGEN_API_KEY,
+  hasDb: !!process.env.DATABASE_URL,
+  hasAnthropic: !!process.env.ANTHROPIC_API_KEY,
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[boot] uncaughtException:", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[boot] unhandledRejection:", reason);
+});
+
 const app = express();
 const httpServer = createServer(app);
 

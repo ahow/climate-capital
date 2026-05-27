@@ -66,14 +66,32 @@ export class NullProvider implements VideoProvider {
 }
 
 function buildProvider(): VideoProvider {
-  const apiKey = process.env.HEYGEN_API_KEY;
-  const disabled = process.env.DISABLE_VIDEO === "true";
-  if (!apiKey || disabled) return new NullProvider();
-  const avatarId = process.env.HEYGEN_AVATAR_ID || DEFAULT_AVATAR_ID;
-  const voiceId = process.env.HEYGEN_VOICE_ID || DEFAULT_VOICE_ID;
-  const baseUrl =
-    process.env.APP_BASE_URL || "https://claude-climate-game-7292a5cc6677.herokuapp.com";
-  return new HeyGenProvider(apiKey, avatarId, voiceId, baseUrl);
+  try {
+    const apiKey = process.env.HEYGEN_API_KEY;
+    const disabled = process.env.DISABLE_VIDEO === "true";
+    if (!apiKey || disabled) return new NullProvider();
+    const avatarId = process.env.HEYGEN_AVATAR_ID || DEFAULT_AVATAR_ID;
+    const voiceId = process.env.HEYGEN_VOICE_ID || DEFAULT_VOICE_ID;
+    const baseUrl =
+      process.env.APP_BASE_URL || "https://claude-climate-game-7292a5cc6677.herokuapp.com";
+    return new HeyGenProvider(apiKey, avatarId, voiceId, baseUrl);
+  } catch (err: any) {
+    console.error("[heygen] provider init failed, falling back to NullProvider:", err?.message);
+    return new NullProvider();
+  }
 }
 
-export const videoProvider: VideoProvider = buildProvider();
+// Lazy singleton — the provider is constructed on first access, never at import time.
+// This guarantees that a missing or invalid env var can never crash the dyno at boot.
+let _provider: VideoProvider | null = null;
+function getProvider(): VideoProvider {
+  if (_provider === null) {
+    _provider = buildProvider();
+  }
+  return _provider;
+}
+
+export const videoProvider: VideoProvider = {
+  isEnabled: () => getProvider().isEnabled(),
+  generateVideo: (opts) => getProvider().generateVideo(opts),
+};
