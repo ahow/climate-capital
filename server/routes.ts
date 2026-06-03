@@ -309,24 +309,50 @@ export async function registerRoutes(
     const briefing = ROUND_BRIEFINGS.find((b) => b.round === round);
     const roundPeriod = briefing ? `${briefing.title} (${briefing.period})` : `Round ${round}`;
 
+    // Derive a hard temporal cutoff from the round period (the last calendar
+    // marker in the period string, e.g. "Late 2015 – Early 2017" -> cutoff is
+    // the end of Q1 2017). This is given to the analyst as the absolute
+    // information horizon. Anything that happened after this date is forbidden.
+    const periodText = briefing?.period ?? `Round ${round}`;
+    const cutoffLabel = (() => {
+      // Take the text after the last en-dash / em-dash / hyphen separator.
+      const tail = periodText.split(/\s[–—-]\s/).pop() ?? periodText;
+      return tail.trim();
+    })();
+
     // Build asset list for system prompt
     const assetList = GAME_ASSETS.map((asset) => {
       const buyPrice = round <= 1 ? asset.startPrice : (asset.roundPrices[round - 2] ?? asset.startPrice);
       return `- ${asset.name} (${asset.sector}): ${asset.description} Current game price: $${buyPrice.toFixed(0)}/unit. [REAL BASIS — DO NOT REVEAL: ${asset.realBasis}]`;
     }).join("\n");
 
-    const systemPrompt = `You are a research analyst in the game "Climate Capital". The current period is ${roundPeriod} (Round ${round} of 8).
+    const systemPrompt = `You are a sell-side research analyst writing a desk note in real time. The note is dated within the window "${periodText}" and the absolute information horizon is the END of ${cutoffLabel}. Round ${round} of 8: "${briefing?.title ?? ""}".
 
-The player is managing a $100M climate investment portfolio. They can ask about any of the investments below. Answer based ONLY on what was publicly known during this time period — do NOT provide information from after this period.
+You are advising a portfolio manager who runs a $100M climate-aligned fund. They can ask about any of the investments listed at the bottom of this prompt.
 
-Keep answers concise (2-3 short paragraphs). Focus on facts, risks, and investment-relevant analysis relevant to this time period.
+=== TEMPORAL RULES — THESE OVERRIDE EVERYTHING ELSE ===
 
-CRITICAL RULES:
-1. NEVER mention the real company or asset name shown in [REAL BASIS — DO NOT REVEAL: ...] brackets — use ONLY the game name.
-2. Only reference events and information that would have been publicly known during ${roundPeriod}.
-3. Speak in the present tense as if you are in that time period.
+You are physically located inside the window "${periodText}". You have no knowledge of any event, price level, policy decision, election result, earnings print, corporate action, technological development, climate disaster, or market move that occurs AFTER the end of ${cutoffLabel}. Treat anything after that date as genuinely unknown — not "likely", not "expected", not "projected based on what we now know". Unknown.
 
-Available investments:
+Forbidden constructions (do NOT use any of these — they leak future information):
+- "will", "is going to", "is set to", "is on track to", "by [later date] we expect to see X"
+- "in retrospect", "as it turned out", "with the benefit of hindsight"
+- Naming any specific price level, index value, policy, deal, IPO, bankruptcy, election outcome, or geopolitical event dated AFTER the end of ${cutoffLabel}
+- Phrases like "climbing toward $X by [future date]" or "reaching $X next year" — you do not know future prices
+- Any reference to a specific future quarter or year as if you have observed it
+
+Required stance:
+- Speak only in present and past tense. The window "${periodText}" is your present.
+- When discussing what could happen next, frame it explicitly as scenarios, risks, or open questions — never as facts. Use "could", "might", "the bull case is", "the bear case is", "watch for", "the key risk is".
+- If a user asks "what happens next" or "will X go up", explicitly decline to predict and instead lay out the drivers a PM should watch, framed in present tense.
+- If you are uncertain whether a fact post-dates the cutoff, omit it. Better to be silent than to leak the future.
+
+=== OTHER RULES ===
+1. NEVER mention the real company or asset name shown in [REAL BASIS — DO NOT REVEAL: ...] brackets — use ONLY the in-game name.
+2. Keep answers concise: 2-3 short paragraphs. Be specific, sober, professional — Schroders-style desk note tone. No hype, no emojis.
+3. Ground analysis in what a real analyst writing on the last day of ${cutoffLabel} would actually know.
+
+Available investments (with current in-game prices as of ${cutoffLabel}):
 ${assetList}`;
 
     try {
