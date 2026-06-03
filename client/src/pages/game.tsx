@@ -3,16 +3,13 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  TrendingUp, TrendingDown, DollarSign, BarChart3, Lock,
+  TrendingUp, TrendingDown, DollarSign, BarChart3,
   ChevronRight, Trophy, Shield, Flame, AlertTriangle, Search,
   RefreshCw, ArrowLeft, Check, X, Info, Newspaper,
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useGame } from "@/contexts/GameContext";
 import { apiRequest } from "@/lib/queryClient";
@@ -22,6 +19,7 @@ import { VideoBriefing, VideoClosing } from "@/components/VideoBriefing";
 import HowToPlayPage from "@/pages/how-to-play";
 import InvestmentUniversePage from "@/pages/investment-universe";
 import { GameTopNav } from "@/components/onboarding/GameTopNav";
+import { TradingTable } from "@/components/trading/TradingTable";
 
 const AWARD_ICONS: Record<string, typeof Trophy> = {
   trophy: Trophy, "trending-up": TrendingUp, flame: Flame,
@@ -32,28 +30,6 @@ function formatMoney(value: number): string {
   if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
   if (Math.abs(value) >= 1_000) return `$${(value / 1_000).toFixed(0)}K`;
   return `$${value.toFixed(0)}`;
-}
-
-function riskColor(level: string) {
-  switch (level) {
-    case "low": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    case "medium": return "bg-amber-50 text-amber-700 border-amber-200";
-    case "high": return "bg-orange-50 text-orange-700 border-orange-200";
-    case "very-high": return "bg-red-50 text-red-700 border-red-200";
-    default: return "";
-  }
-}
-
-function sectorColor(assetClass: string) {
-  switch (assetClass) {
-    case "equity": return "text-[#0074B7]";
-    case "etf": return "text-[#001E41]";
-    case "credit": return "text-[#00875A]";
-    case "infrastructure": return "text-[#E6A100]";
-    case "carbon": return "text-[#494949]";
-    case "thematic": return "text-[#7B2D8E]";
-    default: return "text-[#494949]";
-  }
 }
 
 // Helper: choose heatmap color based on round return
@@ -439,26 +415,14 @@ function BriefingTextBody({
 
 // ── Trading Phase ──
 
-interface PendingTrade {
-  assetId: string;
-  action: "buy" | "sell";
-  amount: number;
-}
-
 function TradingPhase({
-  game, player, assets, gameId, playerId, onSubmitDone,
+  player, assets, gameId, playerId, onSubmitDone,
 }: {
   game: GameSession; player: PlayerState; assets: GameAsset[];
   gameId: string; playerId: string; onSubmitDone: () => void;
 }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [pendingTrades, setPendingTrades] = useState<PendingTrade[]>([]);
-  const [selectedAsset, setSelectedAsset] = useState<GameAsset | null>(null);
-  const [tradeAmount, setTradeAmount] = useState(1);
-  const [tradeAction, setTradeAction] = useState<"buy" | "sell">("buy");
-  const [filter, setFilter] = useState("all");
-  const round = player.currentRound;
 
   const submitMutation = useMutation({
     mutationFn: async (trades: Trade[]) => {
@@ -473,358 +437,14 @@ function TradingPhase({
     onError: (err: Error) => toast({ title: "Trade error", description: err.message, variant: "destructive" }),
   });
 
-  const portfolioValue = getPortfolioValue(player, assets, round);
-  const maxPosition = portfolioValue * 0.40;
-
-  // Calculate how much cash is available after pending buys
-  const pendingBuyTotal = pendingTrades
-    .filter((t) => t.action === "buy")
-    .reduce((sum, t) => sum + t.amount * 1_000_000, 0);
-  const availableCash = player.portfolio.cash - pendingBuyTotal;
-
-  const filteredAssets = filter === "all"
-    ? assets
-    : assets.filter((a) => a.assetClass === filter);
-
-  const assetClasses = Array.from(new Set(assets.map((a) => a.assetClass)));
-
-  function getHoldingForAsset(assetId: string): Holding | undefined {
-    return player.portfolio.holdings.find((h) => h.assetId === assetId);
-  }
-
-  function isLocked(holding: Holding | undefined, round: number): boolean {
-    return !!holding && holding.lockedUntilRound > round;
-  }
-
-  function getCurrentPosition(assetId: string): number {
-    const h = getHoldingForAsset(assetId);
-    if (!h) return 0;
-    return getHoldingValue(h, assets, round);
-  }
-
-  function openTradeDialog(asset: GameAsset) {
-    const holding = getHoldingForAsset(asset.id);
-    setSelectedAsset(asset);
-    setTradeAmount(1);
-    setTradeAction(holding ? "sell" : "buy");
-  }
-
-  function addPendingTrade() {
-    if (!selectedAsset) return;
-    setPendingTrades((prev) => [
-      ...prev.filter((t) => t.assetId !== selectedAsset.id),
-      { assetId: selectedAsset.id, action: tradeAction, amount: tradeAmount },
-    ]);
-    setSelectedAsset(null);
-  }
-
-  function removePendingTrade(assetId: string) {
-    setPendingTrades((prev) => prev.filter((t) => t.assetId !== assetId));
-  }
-
-  function submitAllTrades() {
-    const trades: Trade[] = pendingTrades.map((t) => ({
-      assetId: t.assetId,
-      action: t.action,
-      amount: t.amount * 1_000_000,
-    }));
-    submitMutation.mutate(trades);
-  }
-
-  // Max buy for an asset (limited by cash and 40% position limit)
-  function maxBuyUnits(asset: GameAsset): number {
-    const currentPos = getCurrentPosition(asset.id);
-    const posLimit = Math.max(0, maxPosition - currentPos);
-    const cashLimit = availableCash;
-    return Math.floor(Math.min(posLimit, cashLimit) / 1_000_000);
-  }
-
-  // Max sell for an asset
-  function maxSellUnits(asset: GameAsset): number {
-    const h = getHoldingForAsset(asset.id);
-    if (!h) return 0;
-    return Math.floor(getHoldingValue(h, assets, round) / 1_000_000);
-  }
-
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="flex flex-col lg:flex-row min-h-[calc(100vh-57px)] bg-white"
-    >
-      {/* Left: Portfolio */}
-      <div className="lg:w-80 xl:w-96 border-r border-[#D9DFE7] p-5 space-y-4 bg-[#F4F6F9] overflow-auto">
-        <div>
-          <h3 className="font-sans font-semibold text-sm uppercase tracking-wider text-[#494949]">Portfolio</h3>
-          <div className="h-[3px] w-10 bg-[#0074B7] mt-2" aria-hidden />
-        </div>
-
-        <div className="bg-white border border-[#D9DFE7] rounded-xl p-4 space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-[#494949]">Cash</span>
-            <span className="font-mono font-semibold text-[#0074B7] tabular-nums">{formatMoney(player.portfolio.cash)}</span>
-          </div>
-          <Separator className="bg-[#D9DFE7]" />
-          {player.portfolio.holdings.length === 0 ? (
-            <p className="text-xs text-[#9AA8B4] italic py-2">No holdings yet</p>
-          ) : (
-            <div className="space-y-1">
-              {player.portfolio.holdings.map((h) => {
-                const asset = assets.find((a) => a.id === h.assetId);
-                if (!asset) return null;
-                const value = getHoldingValue(h, assets, round);
-                const locked = isLocked(h, round);
-                return (
-                  <div key={h.assetId} className="flex justify-between items-center text-sm py-1">
-                    <div className="flex items-center gap-1.5 truncate">
-                      {locked && <Lock className="h-3 w-3 text-[#E6A100]" />}
-                      <span className="truncate text-[#001E41]">{asset.name}</span>
-                    </div>
-                    <span className="font-mono shrink-0 text-[#001E41] tabular-nums">{formatMoney(value)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <Separator className="bg-[#D9DFE7]" />
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-semibold text-[#001E41]">Total Value</span>
-            <span className="font-mono font-bold text-[#001E41] tabular-nums">{formatMoney(portfolioValue)}</span>
-          </div>
-        </div>
-
-        {/* Pending trades */}
-        {pendingTrades.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-[#494949]">Pending Trades</h4>
-            {pendingTrades.map((t) => {
-              const asset = assets.find((a) => a.id === t.assetId);
-              return (
-                <div key={t.assetId} className="flex items-center justify-between bg-white border border-[#D9DFE7] rounded-md p-2 text-sm">
-                  <div>
-                    <span className={t.action === "buy" ? "text-[#00875A] font-semibold" : "text-[#C4372C] font-semibold"}>
-                      {t.action.toUpperCase()}
-                    </span>{" "}
-                    <span className="text-[#001E41]">{asset?.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[#001E41] tabular-nums">${t.amount}M</span>
-                    <button onClick={() => removePendingTrade(t.assetId)} className="text-[#9AA8B4] hover:text-[#C4372C]" aria-label="Remove pending trade">
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        <Button
-          data-testid="submit-trades-btn"
-          className="w-full bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px] h-11"
-          size="lg"
-          onClick={submitAllTrades}
-          disabled={submitMutation.isPending}
-        >
-          {submitMutation.isPending ? "Submitting..." : `Submit Trades (${pendingTrades.length})`}
-        </Button>
-        <Button
-          data-testid="skip-trading-btn"
-          variant="ghost"
-          className="w-full text-[#494949] hover:text-[#001E41] hover:bg-white"
-          onClick={() => submitMutation.mutate([])}
-          disabled={submitMutation.isPending}
-        >
-          Skip (Hold Current Positions)
-        </Button>
-      </div>
-
-      {/* Right: Asset browser */}
-      <div className="flex-1 p-5 overflow-auto bg-white">
-        <div className="flex items-center gap-2 mb-5 flex-wrap">
-          <h3 className="font-sans font-semibold text-sm uppercase tracking-wider text-[#494949] mr-2">Assets</h3>
-          <Button
-            data-testid="filter-all"
-            size="sm"
-            onClick={() => setFilter("all")}
-            className={
-              filter === "all"
-                ? "bg-[#001E41] text-white hover:bg-[#0074B7] rounded-md h-8"
-                : "bg-white border border-[#D9DFE7] text-[#001E41] hover:bg-[#F4F6F9] rounded-md h-8"
-            }
-          >
-            All
-          </Button>
-          {assetClasses.map((cls) => (
-            <Button
-              key={cls}
-              data-testid={`filter-${cls}`}
-              size="sm"
-              className={
-                (filter === cls
-                  ? "bg-[#001E41] text-white hover:bg-[#0074B7] "
-                  : "bg-white border border-[#D9DFE7] text-[#001E41] hover:bg-[#F4F6F9] ") +
-                "capitalize rounded-md h-8"
-              }
-              onClick={() => setFilter(cls)}
-            >
-              {cls}
-            </Button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {filteredAssets.map((asset) => {
-            const price = getAssetPrice(asset, round);
-            const prev = getPrevPrice(asset, round);
-            const change = prev > 0 ? ((price - prev) / prev) * 100 : 0;
-            const holding = getHoldingForAsset(asset.id);
-            const locked = isLocked(holding, round);
-            const hasPosition = !!holding;
-
-            return (
-              <div
-                key={asset.id}
-                data-testid={`asset-card-${asset.id}`}
-                className={
-                  "cursor-pointer transition-all rounded-xl bg-white border p-4 relative hover:shadow-sm " +
-                  (hasPosition
-                    ? "border-[#0074B7] ring-1 ring-[#0074B7]/20"
-                    : "border-[#D9DFE7] hover:border-[#0074B7]")
-                }
-                onClick={() => openTradeDialog(asset)}
-              >
-                {asset.lockRounds > 0 && (
-                  <div className="absolute top-3 right-3">
-                    <span className="inline-flex items-center gap-0.5 rounded-md border border-[#E6A100]/40 bg-[#E6A100]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#8A5A00]">
-                      <Lock className="h-2.5 w-2.5" />
-                      {locked ? `Locked ${holding!.lockedUntilRound - round}r` : `${asset.lockRounds}r lock`}
-                    </span>
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <h4 className="font-sans font-semibold text-sm leading-tight text-[#001E41] pr-16">{asset.name}</h4>
-
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] uppercase font-semibold tracking-wider ${sectorColor(asset.assetClass)}`}>
-                      {asset.sector}
-                    </span>
-                    <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${riskColor(asset.riskLevel)}`}>
-                      {asset.riskLevel}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="font-mono font-bold text-base text-[#001E41] tabular-nums">${price.toFixed(0)}</span>
-                    <span className={`text-sm font-semibold flex items-center gap-0.5 tabular-nums ${change >= 0 ? "text-[#00875A]" : "text-[#C4372C]"}`}>
-                      {change >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                      {change >= 0 ? "+" : ""}{change.toFixed(1)}%
-                    </span>
-                  </div>
-
-                  {hasPosition && (
-                    <div className="text-[11px] text-[#0074B7] font-semibold border-t border-[#D9DFE7] pt-1.5 mt-1 tabular-nums">
-                      Position: {formatMoney(getHoldingValue(holding!, assets, round))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Trade Dialog */}
-      <Dialog open={!!selectedAsset} onOpenChange={(open) => { if (!open) setSelectedAsset(null); }}>
-        {selectedAsset && (
-          <DialogContent className="bg-white border-[#D9DFE7]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-[#001E41] font-sans">
-                <span>{selectedAsset.name}</span>
-                <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${riskColor(selectedAsset.riskLevel)}`}>
-                  {selectedAsset.riskLevel}
-                </span>
-              </DialogTitle>
-              <p className="text-sm text-[#494949]">{selectedAsset.description}</p>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Button
-                  data-testid="trade-buy-btn"
-                  size="sm"
-                  onClick={() => { setTradeAction("buy"); setTradeAmount(1); }}
-                  className={
-                    tradeAction === "buy"
-                      ? "bg-[#00875A] text-white hover:bg-[#006b49] rounded-md"
-                      : "bg-white border border-[#D9DFE7] text-[#001E41] hover:bg-[#F4F6F9] rounded-md"
-                  }
-                >
-                  Buy
-                </Button>
-                <Button
-                  data-testid="trade-sell-btn"
-                  size="sm"
-                  onClick={() => { setTradeAction("sell"); setTradeAmount(1); }}
-                  disabled={!getHoldingForAsset(selectedAsset.id) || isLocked(getHoldingForAsset(selectedAsset.id), round)}
-                  className={
-                    tradeAction === "sell"
-                      ? "bg-[#C4372C] text-white hover:bg-[#a3291f] rounded-md"
-                      : "bg-white border border-[#D9DFE7] text-[#001E41] hover:bg-[#F4F6F9] rounded-md disabled:opacity-50"
-                  }
-                >
-                  Sell
-                </Button>
-              </div>
-
-              {isLocked(getHoldingForAsset(selectedAsset.id), round) && (
-                <div className="flex items-center gap-2 p-2 rounded border border-[#E6A100]/40 bg-[#E6A100]/10 text-[#8A5A00] text-xs">
-                  <Lock className="h-3.5 w-3.5" />
-                  This position is locked until round {getHoldingForAsset(selectedAsset.id)!.lockedUntilRound}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[#494949]">Amount</span>
-                  <span className="font-mono font-semibold text-[#001E41] tabular-nums">${tradeAmount}M</span>
-                </div>
-                <Slider
-                  data-testid="trade-slider"
-                  value={[tradeAmount]}
-                  onValueChange={([v]) => setTradeAmount(v)}
-                  min={1}
-                  max={Math.max(1, tradeAction === "buy" ? maxBuyUnits(selectedAsset) : maxSellUnits(selectedAsset))}
-                  step={1}
-                />
-                <div className="flex justify-between text-[11px] text-[#9AA8B4]">
-                  <span>$1M</span>
-                  <span>
-                    Max: ${tradeAction === "buy" ? maxBuyUnits(selectedAsset) : maxSellUnits(selectedAsset)}M
-                  </span>
-                </div>
-              </div>
-
-              {tradeAction === "buy" && (
-                <div className="text-xs text-[#494949] flex items-center gap-1.5">
-                  <Info className="h-3 w-3 text-[#0074B7]" />
-                  Max 40% of portfolio per position ({formatMoney(maxPosition)})
-                </div>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button
-                data-testid="confirm-trade-btn"
-                onClick={addPendingTrade}
-                className="w-full bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px] h-11"
-                disabled={tradeAmount < 1}
-              >
-                {tradeAction === "buy" ? "Add Buy" : "Add Sell"} &mdash; ${tradeAmount}M
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <TradingTable
+        player={player}
+        assets={assets}
+        isSubmitting={submitMutation.isPending}
+        onSubmit={(trades) => submitMutation.mutate(trades)}
+      />
     </motion.div>
   );
 }
