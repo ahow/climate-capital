@@ -722,24 +722,51 @@ export function TradingTable({
             </div>
           )}
         </div>
+        {/* Column headers — inside the sticky banner so they stack reliably */}
+        <div className="hidden lg:block border-t border-[#D9DFE7] bg-[#F4F6F9]">
+          <div className="mx-auto max-w-[1400px] px-4">
+            <table className="w-full border-collapse table-fixed">
+              <colgroup>
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "11%" }} />
+                <col style={{ width: "19%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "10%" }} />
+              </colgroup>
+              <thead>
+                <tr className="text-[10px] uppercase tracking-wider text-[#494949]">
+                  <th className="py-2 pl-4 pr-2 text-left font-semibold">Asset</th>
+                  <th className="px-2 py-2 text-left font-semibold">Sector / Risk</th>
+                  <th className="px-2 py-2 text-left font-semibold">Price (to date)</th>
+                  <th className="px-2 py-2 text-right font-semibold">Buy price</th>
+                  <th className="px-2 py-2 text-right font-semibold">Your position</th>
+                  <th className="px-3 py-2 text-center font-semibold">Adjust</th>
+                  <th className="px-2 py-2 text-right font-semibold">Δ vs original</th>
+                  <th className="px-2 py-2 pr-4 text-right font-semibold">Cash impact</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Desktop table */}
       <div className="hidden lg:block flex-1 overflow-auto">
-        <div className="mx-auto max-w-[1400px] px-4 py-4">
-          <table className="w-full border-collapse">
-            <thead className="sticky top-[73px] z-20 bg-[#F4F6F9]">
-              <tr className="text-[10px] uppercase tracking-wider text-[#494949]">
-                <th className="py-2 pl-4 pr-2 text-left font-semibold">Asset</th>
-                <th className="px-2 py-2 text-left font-semibold">Sector / Risk</th>
-                <th className="px-2 py-2 text-left font-semibold">Price (to date)</th>
-                <th className="px-2 py-2 text-right font-semibold">Buy price</th>
-                <th className="px-2 py-2 text-right font-semibold">Your position</th>
-                <th className="px-3 py-2 text-center font-semibold">Adjust</th>
-                <th className="px-2 py-2 text-right font-semibold">Δ vs original</th>
-                <th className="px-2 py-2 pr-4 text-right font-semibold">Cash impact</th>
-              </tr>
-            </thead>
+        <div className="mx-auto max-w-[1400px] px-4 py-2">
+          <table className="w-full border-collapse table-fixed">
+            <colgroup>
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "13%" }} />
+              <col style={{ width: "14%" }} />
+              <col style={{ width: "8%" }} />
+              <col style={{ width: "11%" }} />
+              <col style={{ width: "19%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "10%" }} />
+            </colgroup>
             <tbody>
               {rows.map((row) => (
                 <Row key={row.asset.id} row={row} onChange={handleChange} />
