@@ -219,6 +219,8 @@ export async function registerRoutes(
       const schema = z.object({
         phase: z.enum([
           "lobby",
+          "howToPlay",
+          "universe",
           "briefing",
           "research",
           "trading",

@@ -19,6 +19,9 @@ import { apiRequest } from "@/lib/queryClient";
 import type { GameSession, PlayerState, GameAsset, RoundBriefing, RoundTakeaway, Holding, Trade } from "@shared/schema";
 import { ROUND_BRIEFINGS } from "@shared/gameData";
 import { VideoBriefing, VideoClosing } from "@/components/VideoBriefing";
+import HowToPlayPage from "@/pages/how-to-play";
+import InvestmentUniversePage from "@/pages/investment-universe";
+import { GameTopNav } from "@/components/onboarding/GameTopNav";
 
 const AWARD_ICONS: Record<string, typeof Trophy> = {
   trophy: Trophy, "trending-up": TrendingUp, flame: Flame,
@@ -152,34 +155,38 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
 
   const phase = player.phase;
   const round = player.currentRound;
+  // The onboarding pages (howToPlay / universe) render their own navy hero and
+  // intentionally have no game chrome. The persistent top nav appears only once
+  // the player is in the game proper.
+  const showTopNav = phase !== "howToPlay" && phase !== "universe";
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* Top bar — white with navy text and a subtle bottom border */}
-      <header className="border-b border-[#D9DFE7] bg-white px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <svg width="22" height="22" viewBox="0 0 28 28" aria-hidden>
-            <circle cx="14" cy="14" r="12" fill="none" stroke="#001E41" strokeWidth="2" />
-            <circle cx="14" cy="14" r="5" fill="#0074B7" />
-          </svg>
-          <span className="font-sans font-bold text-sm tracking-wide text-[#001E41]">CLIMATE CAPITAL</span>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-[#494949]">
-            Round <span className="text-[#001E41] font-semibold">{round}</span>/{game.maxRounds}
-          </span>
-          <span className="hidden sm:inline-flex items-center rounded-md bg-[#F4F6F9] px-2 py-0.5 text-xs font-medium text-[#001E41] capitalize">
-            {phase}
-          </span>
-          <span className="text-[#0074B7] font-semibold font-mono tabular-nums">
-            {formatMoney(getPortfolioValue(player, assets, round))}
-          </span>
-        </div>
-      </header>
+      {showTopNav && (
+        <GameTopNav
+          playerName={player.name}
+          portfolioValue={getPortfolioValue(player, assets, round)}
+          round={round}
+          maxRounds={game.maxRounds}
+          phase={phase}
+        />
+      )}
 
       {/* Phase content */}
       <main className="flex-1 overflow-auto">
         <AnimatePresence mode="wait">
+          {phase === "howToPlay" && (
+            <HowToPlayPage
+              key="howToPlay"
+              onContinue={() => advanceMutation.mutate()}
+            />
+          )}
+          {phase === "universe" && (
+            <InvestmentUniversePage
+              key="universe"
+              onContinue={() => advanceMutation.mutate()}
+            />
+          )}
           {phase === "briefing" && (
             <BriefingPhase
               key="briefing"

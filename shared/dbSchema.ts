@@ -16,7 +16,10 @@ export const players = pgTable("players", {
   name: varchar("name", { length: 30 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   currentRound: integer("current_round").notNull().default(1),
-  phase: varchar("phase", { length: 20 }).notNull().default("briefing"),
+  // PlayerPhase: howToPlay | universe | briefing | research | trading |
+  // results | takeaways | finished (legacy: lobby). New players start at
+  // howToPlay; stored as free text so adding phases needs no DDL change.
+  phase: varchar("phase", { length: 20 }).notNull().default("howToPlay"),
   portfolio: jsonb("portfolio").notNull().$type<{
     cash: number;
     holdings: Array<{

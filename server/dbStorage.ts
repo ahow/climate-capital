@@ -182,7 +182,7 @@ export class DbStorage implements IStorage {
         name: playerName,
         email,
         currentRound: 1,
-        phase: "briefing",
+        phase: "howToPlay",
         portfolio: { cash: STARTING_CASH, holdings: [] },
         valueHistory: [],
         predictions: [],
@@ -307,6 +307,17 @@ export class DbStorage implements IStorage {
     const game = await this.getGame(gameId);
     if (!game) throw new Error("Game not found");
 
+    // Onboarding transitions don't advance the round — they walk new players
+    // through the two intro pages before round 1.
+    if (player.phase === "howToPlay" || player.phase === "universe") {
+      player.phase = player.phase === "howToPlay" ? "universe" : "briefing";
+      await db
+        .update(players)
+        .set({ phase: player.phase })
+        .where(eq(players.id, player.id));
+      return player;
+    }
+
     const value = portfolioValue(player, player.currentRound);
     player.valueHistory.push(value);
     player.currentRound += 1;
@@ -345,7 +356,7 @@ export class DbStorage implements IStorage {
       .update(players)
       .set({
         currentRound: 1,
-        phase: "briefing",
+        phase: "howToPlay",
         portfolio: { cash: STARTING_CASH, holdings: [] },
         valueHistory: [],
         predictions: [],

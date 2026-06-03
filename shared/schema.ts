@@ -2,6 +2,21 @@ import { z } from "zod";
 
 // ── Types (no DB needed — in-memory game state) ──
 
+// Valuation snapshot for the Investment Universe page. Only `tier` is required;
+// the numeric fields are shown only where populated.
+export interface AssetValuation {
+  tier: "Small" | "Mid" | "Large" | "Mega" | "ETF" | "Commodity";
+  marketCapBn?: number;
+  peRatioProxy?: number;
+  dividendYieldPct?: number;
+}
+
+// A milestone aligned with the 8-round price arc, surfaced on the detail chart.
+export interface AssetHistoricalNote {
+  round: number;
+  event: string;
+}
+
 export interface GameAsset {
   id: string;
   name: string;
@@ -18,6 +33,14 @@ export interface GameAsset {
   lockRounds: number;
   // Minimum allocation in $M
   minAllocation: number;
+  // ── Investment Universe enrichment (onboarding pages) ──
+  valuation: AssetValuation;
+  // Investor-facing rationale for inclusion in a transition portfolio
+  transitionThesis: string;
+  // Coarser risk label used by the universe filters (distinct from riskLevel)
+  riskProfile: "Low" | "Moderate" | "High" | "Speculative";
+  keyRisks: string[];
+  historicalNotes?: AssetHistoricalNote[];
 }
 
 export interface RoundBriefing {
@@ -48,6 +71,8 @@ export interface PlayerPortfolio {
 
 export type PlayerPhase =
   | "lobby"
+  | "howToPlay"
+  | "universe"
   | "briefing"
   | "research"
   | "trading"

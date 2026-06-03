@@ -34,6 +34,20 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [90, 139, 174, 1470, 2202, 770, 2524],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Mega", marketCapBn: 780, peRatioProxy: 65, dividendYieldPct: 0 },
+    transitionThesis:
+      "The bellwether of the electric-vehicle shift, pairing high-volume EV production with energy storage and solar — a pure-play bet on transport and grid electrification.",
+    riskProfile: "Speculative",
+    keyRisks: [
+      "Valuation swings dramatically with sentiment, not just fundamentals",
+      "Heavy reliance on a single high-profile CEO",
+      "Intensifying EV price competition compresses margins",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Joins the broad market index; record rebalancing trade" },
+      { round: 5, event: "Parabolic clean-energy rally lifts the stock to a peak" },
+      { round: 6, event: "Rate hikes and risk-off rotation trigger a sharp drawdown" },
+    ],
   },
   {
     id: "solarpeak",
@@ -48,6 +62,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [42, 135, 744, 4999, 5212, 7549, 3765],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Mid", marketCapBn: 18, peRatioProxy: 40, dividendYieldPct: 0 },
+    transitionThesis:
+      "A direct play on residential solar adoption: its micro-inverters are the enabling hardware for distributed rooftop generation as homeowners electrify.",
+    riskProfile: "Speculative",
+    keyRisks: [
+      "Highly sensitive to residential solar subsidy and net-metering rules",
+      "Concentrated in a few key state markets",
+      "Extreme share-price volatility through the rate cycle",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Residential solar boom drives a parabolic re-rating" },
+      { round: 7, event: "Higher rates and policy changes sharply cut demand" },
+    ],
   },
   {
     id: "nordicwind",
@@ -62,6 +89,20 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [100, 123, 194, 314, 186, 129, 86],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Large", marketCapBn: 45, peRatioProxy: 22, dividendYieldPct: 2.5 },
+    transitionThesis:
+      "Europe's largest offshore wind developer and a flagship of the energy transition — building the large-scale generation capacity that decarbonised grids require.",
+    riskProfile: "High",
+    keyRisks: [
+      "Project economics highly exposed to interest rates",
+      "Construction-cost overruns on multi-year builds",
+      "Auction-price and political risk in key markets",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Offshore-wind optimism pushes the stock to its peak" },
+      { round: 5, event: "Auction-price pressure begins a steep de-rating" },
+      { round: 7, event: "Multi-billion writedown; project cancellations" },
+    ],
   },
   {
     id: "hydrogen",
@@ -76,6 +117,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [50, 59, 150, 1607, 1338, 586, 213],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Mid", marketCapBn: 6, peRatioProxy: 0, dividendYieldPct: 0 },
+    transitionThesis:
+      "A bet on green hydrogen as the decarbonisation pathway for hard-to-electrify industry and heavy transport — high optionality if fuel-cell economics break through.",
+    riskProfile: "Speculative",
+    keyRisks: [
+      "Has never been profitable; relies on continued funding",
+      "Hydrogen cost curve remains far above incumbents",
+      "Periodic speculative spikes detached from fundamentals",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Green-hydrogen hype drives an enormous speculative spike" },
+      { round: 6, event: "Funding squeeze and rate hikes deflate the rally" },
+    ],
   },
   {
     id: "nextgen",
@@ -90,6 +144,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [109, 166, 235, 270, 336, 318, 231],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Mega", marketCapBn: 150, peRatioProxy: 24, dividendYieldPct: 2.4 },
+    transitionThesis:
+      "The world's largest wind and solar generator wrapped around a regulated utility — a lower-volatility way to own the build-out of clean generation with a growing dividend.",
+    riskProfile: "Moderate",
+    keyRisks: [
+      "Rate-sensitive given large regulated rate base",
+      "Execution risk on an ambitious renewables pipeline",
+      "Regulatory and weather exposure in its home market",
+    ],
+    historicalNotes: [
+      { round: 5, event: "Renewables leadership lifts the stock to a high" },
+      { round: 7, event: "Rate-driven de-rating pulls it back" },
+    ],
   },
 
   // ─── PUBLIC EQUITIES — FOSSIL FUELS ───
@@ -106,6 +173,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [111, 89, 85, 41, 70, 135, 126],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Mega", marketCapBn: 450, peRatioProxy: 12, dividendYieldPct: 3.5 },
+    transitionThesis:
+      "A transition-portfolio diversifier rather than a green asset: strong cash flows and dividends provide ballast and an energy-security hedge when fossil demand spikes.",
+    riskProfile: "Moderate",
+    keyRisks: [
+      "Long-run demand erosion as the transition advances",
+      "Excluded by many ESG mandates, limiting the buyer base",
+      "Earnings highly cyclical with the oil price",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Oil prices collapse during the pandemic shock" },
+      { round: 6, event: "Energy crisis drives record profits; best performer" },
+    ],
   },
   {
     id: "appcoal",
@@ -120,6 +200,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [0, 0, 92, 24, 101, 265, 247],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Small", marketCapBn: 2, peRatioProxy: 6, dividendYieldPct: 0 },
+    transitionThesis:
+      "Included as the cautionary counter-case: a fossil incumbent most directly in the path of decarbonisation, illustrating stranded-asset and transition risk.",
+    riskProfile: "Speculative",
+    keyRisks: [
+      "Structural demand decline under climate policy",
+      "History of bankruptcy and restructuring",
+      "Extreme price swings on commodity and policy news",
+    ],
+    historicalNotes: [
+      { round: 1, event: "Files for bankruptcy; holders wiped out" },
+      { round: 6, event: "Energy crisis revives coal demand and the share price" },
+    ],
   },
   {
     id: "autoemissions",
@@ -134,6 +227,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [105, 104, 122, 120, 182, 104, 82],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Large", marketCapBn: 70, peRatioProxy: 5, dividendYieldPct: 5.5 },
+    transitionThesis:
+      "A legacy automaker attempting a costly pivot to electric vehicles — a turnaround bet on whether an incumbent can out-scale pure-play EV challengers.",
+    riskProfile: "High",
+    keyRisks: [
+      "Heavy capital cost of the EV transition weighs on returns",
+      "Legacy emissions-scandal liabilities and reputational drag",
+      "Intense competition from dedicated EV makers",
+    ],
+    historicalNotes: [
+      { round: 5, event: "EV-pivot optimism lifts the shares" },
+      { round: 7, event: "EV price war and execution doubts pressure the stock" },
+    ],
   },
 
   // ─── ETFs / INDICES ───
@@ -150,6 +256,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [80, 84, 119, 287, 215, 202, 158],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "ETF", dividendYieldPct: 1.2 },
+    transitionThesis:
+      "The simplest one-click way to own the global clean-energy theme, spreading exposure across solar, wind and related names in a single diversified vehicle.",
+    riskProfile: "High",
+    keyRisks: [
+      "Concentrated in a volatile, rate-sensitive sector",
+      "Tracks the boom-bust cycle of clean-energy sentiment",
+      "Less diversification than the headline 'broad' label implies",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Clean-energy index returns +142% in a single year" },
+      { round: 7, event: "Multi-year drawdown unwinds most of the rally" },
+    ],
   },
   {
     id: "esgindex",
@@ -164,6 +283,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [132, 143, 186, 237, 312, 257, 320],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "ETF", dividendYieldPct: 1.3 },
+    transitionThesis:
+      "A broad large-cap index with an ESG screen — a core, low-tracking-error holding that lets investors tilt 'greener' without straying far from the benchmark.",
+    riskProfile: "Moderate",
+    keyRisks: [
+      "Outperformance driven by tech weighting, not green credentials",
+      "Screening methodology can change index composition",
+      "Broad-market drawdowns affect it like any large-cap fund",
+    ],
+    historicalNotes: [
+      { round: 5, event: "Tech-led rally lifts the index to new highs" },
+    ],
   },
   {
     id: "sp500",
@@ -178,6 +309,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [131, 123, 158, 184, 233, 188, 288],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "ETF", dividendYieldPct: 1.4 },
+    transitionThesis:
+      "The benchmark every climate strategy is measured against — held as a yardstick and a diversified anchor rather than for any transition angle of its own.",
+    riskProfile: "Moderate",
+    keyRisks: [
+      "No climate tilt; purely the market baseline",
+      "Concentration in a handful of mega-cap names",
+      "Exposed to broad-market drawdowns",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Pandemic crash then a rapid stimulus-fuelled recovery" },
+    ],
   },
 
   // ─── GREEN BONDS / CREDIT ───
@@ -194,6 +337,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [103, 107, 114, 128, 118, 92, 101],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "ETF", dividendYieldPct: 3.0 },
+    transitionThesis:
+      "Fixed income earmarked for green projects — a low-volatility way to fund the transition directly while collecting a modest, climate-aligned yield.",
+    riskProfile: "Low",
+    keyRisks: [
+      "Prices fall when interest rates rise (duration risk)",
+      "Small 'greenium' means slightly lower yields",
+      "Use-of-proceeds reporting varies by issuer",
+    ],
+    historicalNotes: [
+      { round: 6, event: "Sharp rate rises hit bond prices across the board" },
+    ],
   },
   {
     id: "transitionbond",
@@ -207,6 +362,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [102, 104, 108, 115, 108, 88, 96],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "ETF", dividendYieldPct: 3.2 },
+    transitionThesis:
+      "A sustainability-linked note whose coupon steps up if the issuer misses emissions targets — a pioneering instrument that ties financing cost to real decarbonisation.",
+    riskProfile: "Low",
+    keyRisks: [
+      "Duration risk as rates move",
+      "Coupon step-ups depend on issuer target design",
+      "Limited liquidity in a young instrument class",
+    ],
+    historicalNotes: [
+      { round: 6, event: "Rate shock pressures the note's price" },
+    ],
   },
 
   // ─── INFRASTRUCTURE ───
@@ -223,6 +390,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [108, 118, 130, 145, 155, 130, 105],
     lockRounds: 2,
     minAllocation: 5_000_000,
+    valuation: { tier: "Large", peRatioProxy: 0, dividendYieldPct: 5.0 },
+    transitionThesis:
+      "Direct ownership of large-scale offshore wind generation — the hard infrastructure of the transition, offering high targeted returns in exchange for illiquidity.",
+    riskProfile: "High",
+    keyRisks: [
+      "Locked for 2 rounds after purchase (illiquid)",
+      "Construction cost overruns and delays",
+      "Returns squeezed by higher rates and auction pricing",
+    ],
+    historicalNotes: [
+      { round: 5, event: "Strong vintages lift fund value to a peak" },
+      { round: 7, event: "Cost and rate squeeze erodes returns" },
+    ],
   },
   {
     id: "solarfarm",
@@ -237,6 +417,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [112, 126, 142, 160, 172, 158, 150],
     lockRounds: 2,
     minAllocation: 5_000_000,
+    valuation: { tier: "Large", peRatioProxy: 0, dividendYieldPct: 4.5 },
+    transitionThesis:
+      "A portfolio of operating utility-scale solar farms — contracted, cash-generative renewable infrastructure that turns falling panel costs into steady yield.",
+    riskProfile: "Moderate",
+    keyRisks: [
+      "Locked for 2 rounds after purchase (illiquid)",
+      "'Capture rate' compression erodes power-sale prices",
+      "Returns sensitive to financing costs",
+    ],
+    historicalNotes: [
+      { round: 5, event: "Falling panel costs lift returns to a high" },
+      { round: 6, event: "Capture-rate compression begins to bite" },
+    ],
   },
   {
     id: "brookfield",
@@ -250,6 +443,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [123, 121, 234, 422, 361, 265, 266],
     lockRounds: 2,
     minAllocation: 5_000_000,
+    valuation: { tier: "Large", peRatioProxy: 0, dividendYieldPct: 4.0 },
+    transitionThesis:
+      "A diversified global renewable platform targeting 12–15% returns — the most consistent way to compound transition infrastructure, now boosted by AI data-centre power demand.",
+    riskProfile: "Moderate",
+    keyRisks: [
+      "Locked for 2 rounds after purchase (illiquid)",
+      "Leverage amplifies sensitivity to rates",
+      "Execution risk across a large global pipeline",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Platform scales rapidly; strong re-rating" },
+      { round: 7, event: "Record results on AI data-centre power contracts" },
+    ],
   },
 
   // ─── CARBON MARKETS ───
@@ -266,6 +472,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [73, 291, 364, 408, 655, 1166, 933],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Commodity" },
+    transitionThesis:
+      "Direct exposure to the price of carbon under the world's largest compliance market — a structural long on tightening emissions caps that forces real decarbonisation.",
+    riskProfile: "High",
+    keyRisks: [
+      "Allowance supply set by regulators, not markets",
+      "Extreme price volatility through policy cycles",
+      "Political risk of intervention during energy crises",
+    ],
+    historicalNotes: [
+      { round: 6, event: "Hits an all-time high during the energy crisis" },
+    ],
   },
   {
     id: "vcm-premium",
@@ -280,6 +498,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [100, 100, 114, 136, 164, 218, 182],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Commodity" },
+    transitionThesis:
+      "High-integrity voluntary carbon credits with proven additionality — exposure to corporate net-zero demand while sidestepping the integrity scandals that hit cheaper credits.",
+    riskProfile: "Moderate",
+    keyRisks: [
+      "Voluntary demand is discretionary and sentiment-driven",
+      "Methodology scrutiny can re-rate the whole market",
+      "Thin, opaque secondary-market liquidity",
+    ],
+    historicalNotes: [
+      { round: 6, event: "Premium credits hold value as generics collapse" },
+    ],
   },
   {
     id: "vcm-standard",
@@ -294,6 +524,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [97, 92, 120, 92, 158, 315, 185],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Commodity" },
+    transitionThesis:
+      "Low-cost forestry credits offering the cheapest tonne of claimed avoidance — included to show the integrity trade-off between price and proven climate impact.",
+    riskProfile: "High",
+    keyRisks: [
+      "Integrity scandals can collapse credit value",
+      "Questionable additionality on many projects",
+      "Demand evaporates when buyers flee reputational risk",
+    ],
+    historicalNotes: [
+      { round: 7, event: "Integrity investigation triggers a sharp sell-off" },
+    ],
   },
   {
     id: "naturalcapital",
@@ -308,6 +550,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [100, 100, 102, 105, 108, 103, 100],
     lockRounds: 3,
     minAllocation: 5_000_000,
+    valuation: { tier: "Large", peRatioProxy: 0, dividendYieldPct: 1.0 },
+    transitionThesis:
+      "A long-horizon fund in forest conservation, regenerative agriculture and blue carbon — patient capital aimed at the nature side of the climate equation.",
+    riskProfile: "High",
+    keyRisks: [
+      "Locked for 3 rounds after purchase (highly illiquid)",
+      "Long time horizon before returns materialise",
+      "Exposed to carbon-credit integrity sentiment",
+    ],
+    historicalNotes: [
+      { round: 5, event: "Early vintages perform steadily" },
+      { round: 7, event: "Nature-credit scrutiny caps the upside" },
+    ],
   },
 
   // ─── THEMATIC / HIGH-CONVICTION ───
@@ -324,6 +579,19 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [100, 100, 100, 165, 86, 16, 12],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Small", marketCapBn: 1, peRatioProxy: 0, dividendYieldPct: 0 },
+    transitionThesis:
+      "A bet on plant-based protein as a lower-emissions alternative to industrial meat — a high-conviction wager that food-system change becomes mainstream consumer demand.",
+    riskProfile: "Speculative",
+    keyRisks: [
+      "Consumer demand for alt-protein has proven fickle",
+      "Persistent lack of profitability",
+      "Crowded, increasingly competitive category",
+    ],
+    historicalNotes: [
+      { round: 4, event: "Post-IPO euphoria drives an early peak" },
+      { round: 6, event: "Demand disappoints; shares collapse" },
+    ],
   },
   {
     id: "wildfire",
@@ -338,6 +606,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [107, 44, 20, 22, 22, 26, 30],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Mid", marketCapBn: 10, peRatioProxy: 9, dividendYieldPct: 0 },
+    transitionThesis:
+      "Included to make physical climate risk concrete: a utility whose business model is directly threatened by climate-driven wildfire — the cost side of a warming world.",
+    riskProfile: "Speculative",
+    keyRisks: [
+      "Catastrophic wildfire liabilities",
+      "Bankruptcy and restructuring history",
+      "Regulatory and litigation overhang",
+    ],
+    historicalNotes: [
+      { round: 2, event: "Wildfire liabilities force a bankruptcy filing" },
+    ],
   },
   {
     id: "dac",
@@ -352,6 +632,18 @@ export const GAME_ASSETS: GameAsset[] = [
     roundPrices: [100, 100, 100, 95, 92, 100, 115],
     lockRounds: 0,
     minAllocation: 1_000_000,
+    valuation: { tier: "Small", marketCapBn: 1, peRatioProxy: 0, dividendYieldPct: 0 },
+    transitionThesis:
+      "A frontier bet on engineered carbon removal: direct air capture is essential to net-zero scenarios, with enormous upside if costs fall toward compliance-carbon levels.",
+    riskProfile: "Speculative",
+    keyRisks: [
+      "Capture costs remain roughly 10x compliance carbon",
+      "Early-stage technology with unproven economics at scale",
+      "Dependent on continued grant and policy support",
+    ],
+    historicalNotes: [
+      { round: 7, event: "Cost-curve optimism lifts valuations modestly" },
+    ],
   },
 ];
 

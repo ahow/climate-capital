@@ -157,7 +157,7 @@ export class MemStorage implements IStorage {
       name: playerName,
       email,
       currentRound: 1,
-      phase: "briefing",
+      phase: "howToPlay",
       portfolio: {
         cash: STARTING_CASH,
         holdings: [],
@@ -266,6 +266,17 @@ export class MemStorage implements IStorage {
     const player = game.players[playerId];
     if (!player) throw new Error("Player not found");
 
+    // Onboarding transitions don't advance the round — they walk new players
+    // through the two intro pages before round 1.
+    if (player.phase === "howToPlay") {
+      player.phase = "universe";
+      return player;
+    }
+    if (player.phase === "universe") {
+      player.phase = "briefing";
+      return player;
+    }
+
     const value = portfolioValue(player, player.currentRound);
     player.valueHistory.push(value);
 
@@ -299,7 +310,7 @@ export class MemStorage implements IStorage {
     const player = game.players[playerId];
     if (!player) throw new Error("Player not found");
     player.currentRound = 1;
-    player.phase = "briefing";
+    player.phase = "howToPlay";
     player.portfolio = { cash: STARTING_CASH, holdings: [] };
     player.valueHistory = [];
     player.predictions = [];
@@ -630,6 +641,13 @@ const MIGRATIONS: Array<{ name: string; sql: string }> = [
   {
     name: "players_migrate_lobby_phase",
     sql: `UPDATE players SET phase = 'briefing' WHERE phase = 'lobby'`,
+  },
+  {
+    // New players begin in the onboarding flow (howToPlay → universe → briefing).
+    // Existing 'briefing' rows are intentionally left untouched — they have
+    // conceptually already passed onboarding.
+    name: "players_phase_default_howtoplay",
+    sql: `ALTER TABLE players ALTER COLUMN phase SET DEFAULT 'howToPlay'`,
   },
   {
     name: "create_round_briefing_videos",

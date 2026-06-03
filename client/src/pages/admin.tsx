@@ -252,6 +252,10 @@ export default function AdminPage() {
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
                           player.phase === "finished"
                             ? "bg-[#F4F6F9] text-[#494949]"
+                            : player.phase === "howToPlay"
+                            ? "bg-[#F4F6F9] text-[#494949] border border-[#D9DFE7]"
+                            : player.phase === "universe"
+                            ? "bg-[#0074B7]/10 text-[#0074B7]"
                             : player.phase === "lobby"
                             ? "bg-[#0074B7]/10 text-[#0074B7]"
                             : "bg-[#00875A]/10 text-[#00875A]"
