@@ -20,6 +20,9 @@ import HowToPlayPage from "@/pages/how-to-play";
 import InvestmentUniversePage from "@/pages/investment-universe";
 import { GameTopNav } from "@/components/onboarding/GameTopNav";
 import { TradingTable } from "@/components/trading/TradingTable";
+import type { JourneyStage } from "@/components/journey/GameJourney";
+import { StickyActionBar } from "@/components/journey/GameJourney";
+import { StatusState } from "@/components/StatusState";
 
 const AWARD_ICONS: Record<string, typeof Trophy> = {
   trophy: Trophy, "trending-up": TrendingUp, flame: Flame,
@@ -62,8 +65,9 @@ export default function GamePage() {
 function GameContent({ gameId, playerId }: { gameId: string; playerId: string }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [isReviewingTrades, setIsReviewingTrades] = useState(false);
 
-  const { data: game, isLoading: gameLoading } = useQuery<GameSession>({
+  const { data: game, isLoading: gameLoading, isError: gameError, refetch: refetchGame } = useQuery<GameSession>({
     queryKey: ["/api/games", gameId],
     queryFn: async () => {
       const res = await apiRequest("GET", `/api/games/${gameId}`);
@@ -72,7 +76,7 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
     refetchInterval: 3000,
   });
 
-  const { data: player } = useQuery<PlayerState>({
+  const { data: player, isError: playerError, refetch: refetchPlayer } = useQuery<PlayerState>({
     queryKey: ["/api/games", gameId, "player", playerId],
     queryFn: async () => {
       const res = await apiRequest("GET", `/api/games/${gameId}/player/${playerId}`);
@@ -81,7 +85,7 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
     refetchInterval: 3000,
   });
 
-  const { data: assets } = useQuery<GameAsset[]>({
+  const { data: assets, isError: assetsError, refetch: refetchAssets } = useQuery<GameAsset[]>({
     queryKey: ["/api/assets"],
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/assets");
@@ -118,19 +122,48 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
     },
   });
 
+  useEffect(() => {
+    if (player?.phase !== "trading") setIsReviewingTrades(false);
+  }, [player?.phase]);
+
+  if (gameError || playerError || assetsError) {
+    return (
+      <StatusState
+        variant="error"
+        title="We couldn’t restore this game session"
+        description="The session may have expired, or the connection may be interrupted. Retry first; if the problem continues, return to the start page and reconnect with the same email."
+        actionLabel="Retry session"
+        onAction={() => {
+          refetchGame();
+          refetchPlayer();
+          refetchAssets();
+        }}
+        fullScreen
+      />
+    );
+  }
+
   if (gameLoading || !game || !player || !assets) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-center space-y-4">
-          <div className="h-12 w-12 mx-auto rounded-full border-2 border-[#0074B7] border-t-transparent animate-spin" />
-          <p className="text-[#494949] text-sm">Loading game...</p>
-        </div>
-      </div>
+      <StatusState
+        variant="loading"
+        title="Restoring your simulation"
+        description="Loading the game, portfolio, and investment universe."
+        fullScreen
+      />
     );
   }
 
   const phase = player.phase;
   const round = player.currentRound;
+  const currentStage: JourneyStage =
+    phase === "briefing"
+      ? "briefing"
+      : phase === "research"
+        ? "research"
+        : phase === "trading"
+          ? isReviewingTrades ? "review" : "allocate"
+          : "results";
   // The onboarding pages (howToPlay / universe) render their own navy hero and
   // intentionally have no game chrome. The persistent top nav appears only once
   // the player is in the game proper.
@@ -144,7 +177,7 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
           portfolioValue={getPortfolioValue(player, assets, round)}
           round={round}
           maxRounds={game.maxRounds}
-          phase={phase}
+          currentStage={currentStage}
         />
       )}
 
@@ -189,6 +222,7 @@ function GameContent({ gameId, playerId }: { gameId: string; playerId: string })
               assets={assets}
               gameId={gameId}
               playerId={playerId}
+              onReviewStateChange={setIsReviewingTrades}
               onSubmitDone={() => phaseMutation.mutate("results")}
             />
           )}
@@ -260,32 +294,42 @@ function getHoldingValue(h: Holding, assets: GameAsset[], round: number): number
 
 function NewsTicker({ headlines }: { headlines: string[] }) {
   if (!headlines || headlines.length === 0) return null;
-  // Duplicate the list for seamless marquee loop
-  const loop = [...headlines, ...headlines];
+  const featured = headlines.slice(0, 3);
+  const remaining = headlines.slice(3);
   return (
     <div
       data-testid="news-ticker"
-      className="bg-[#001E41] text-white border-y border-[#0074B7]/40 overflow-hidden relative"
-      aria-label="Breaking financial news"
+      className="border-y border-[#0074B7]/40 bg-[#001E41] text-white"
+      aria-label="Market pulse"
     >
-      <div className="flex items-stretch">
-        <div className="bg-[#0074B7] text-white px-4 py-2 flex items-center gap-2 shrink-0 z-10">
-          <Newspaper className="h-3.5 w-3.5" />
-          <span className="text-[11px] font-bold uppercase tracking-[0.15em]">Breaking</span>
+      <div className="mx-auto max-w-5xl px-6 py-4">
+        <div className="flex items-center gap-2">
+          <Newspaper className="h-4 w-4 text-[#A8D0E6]" aria-hidden />
+          <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#A8D0E6]">Market pulse</span>
         </div>
-        <div className="flex-1 overflow-hidden relative py-2">
-          <div className="news-marquee">
-            {loop.map((h, i) => (
-              <span
-                key={i}
-                className="text-sm px-8 whitespace-nowrap"
-              >
-                <span className="text-[#A8D0E6] mr-2">●</span>
-                {h}
-              </span>
-            ))}
-          </div>
+        <div className="mt-3 grid gap-2 md:grid-cols-3">
+          {featured.map((headline, index) => (
+            <div key={`${headline}-${index}`} className="rounded-lg border border-white/10 bg-white/[0.06] px-3 py-2.5 text-sm leading-snug text-white/90">
+              <span className="mr-2 font-mono text-[10px] text-[#A8D0E6]">0{index + 1}</span>
+              {headline}
+            </div>
+          ))}
         </div>
+        {remaining.length > 0 && (
+          <details className="mt-3 text-sm text-white/75">
+            <summary className="w-fit cursor-pointer text-xs font-medium text-[#A8D0E6] underline-offset-4 hover:underline">
+              View the full round timeline
+            </summary>
+            <ul className="mt-3 grid gap-2 md:grid-cols-2">
+              {remaining.map((headline, index) => (
+                <li key={`${headline}-${index}`} className="flex gap-2 rounded-md bg-white/[0.04] px-3 py-2">
+                  <span className="text-[#A8D0E6]" aria-hidden>•</span>
+                  <span>{headline}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </div>
     </div>
   );
@@ -360,55 +404,60 @@ function BriefingTextBody({
   briefing: BriefingWithNews;
   onContinue: () => void;
 }) {
+  const groups = [
+    { title: "Policy", copy: "Rules and public commitments shaping capital", items: briefing.contextBullets.slice(0, 2) },
+    { title: "Markets", copy: "Prices, demand, and investor behaviour", items: briefing.contextBullets.slice(2, 4) },
+    { title: "Technology", copy: "Adoption signals and transition economics", items: briefing.contextBullets.slice(4) },
+  ].filter((group) => group.items.length > 0);
+
   return (
-    <div className="bg-[#F4F6F9] pb-12">
-      <div className="max-w-3xl mx-auto px-6 py-10 space-y-6">
-        <div>
-          <h3 className="font-sans font-semibold text-sm uppercase tracking-wider text-[#494949] mb-3">
-            Context
-          </h3>
-          <div className="space-y-2">
-            {briefing.contextBullets.map((bullet, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
-                className="flex gap-3 p-4 rounded-lg bg-white border border-[#D9DFE7]"
-              >
-                <ChevronRight className="h-4 w-4 text-[#0074B7] mt-0.5 shrink-0" />
-                <p className="text-sm leading-relaxed text-[#494949]">{bullet}</p>
-              </motion.div>
-            ))}
-          </div>
+    <div className="bg-[#F4F6F9]">
+      <div className="mx-auto max-w-5xl space-y-7 px-6 py-10">
+        <div className="grid gap-4 md:grid-cols-3">
+          {groups.map((group, groupIndex) => (
+            <motion.section
+              key={group.title}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + groupIndex * 0.08, duration: 0.3 }}
+              className="rounded-xl border border-[#D9DFE7] bg-white p-5"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#0074B7]">{group.title}</p>
+              <p className="mt-1 text-xs text-[#7B8998]">{group.copy}</p>
+              <ul className="mt-4 space-y-3">
+                {group.items.map((bullet) => (
+                  <li key={bullet} className="flex gap-2 text-sm leading-relaxed text-[#494949]">
+                    <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-[#0074B7]" aria-hidden />
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.section>
+          ))}
         </div>
 
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 + briefing.contextBullets.length * 0.1 }}
-          className="bg-white border-l-4 border-[#0074B7] border-y border-r border-[#D9DFE7] rounded-r-lg p-5"
+          className="rounded-xl border border-[#0074B7]/25 bg-[#EAF5FB] p-5"
         >
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#0074B7] mb-1">Key question</p>
-          <p className="text-base font-medium text-[#001E41] leading-snug">{briefing.keyQuestion}</p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 + briefing.contextBullets.length * 0.1 }}
-          className="flex justify-center pt-2"
-        >
-          <Button
-            data-testid="begin-trading-btn"
-            size="lg"
-            onClick={onContinue}
-            className="gap-2 bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px] px-6 h-11"
-          >
-            Begin Trading <BarChart3 className="h-4 w-4" />
-          </Button>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-[#0074B7]">Decision to consider</p>
+          <p className="text-lg font-medium leading-snug text-[#001E41]">{briefing.keyQuestion}</p>
         </motion.div>
       </div>
+      <StickyActionBar
+        summary={<><strong className="text-[#001E41]">{briefing.contextBullets.length} market signals</strong> reviewed · one decision question</>}
+        primary={
+          <Button
+            data-testid="begin-trading-btn"
+            onClick={onContinue}
+            className="h-11 w-full gap-2 rounded-[10px] bg-[#001E41] px-6 text-white hover:bg-[#0074B7] sm:w-auto"
+          >
+            Continue to research <ChevronRight className="h-4 w-4" />
+          </Button>
+        }
+      />
     </div>
   );
 }
@@ -416,10 +465,12 @@ function BriefingTextBody({
 // ── Trading Phase ──
 
 function TradingPhase({
-  player, assets, gameId, playerId, onSubmitDone,
+  player, assets, gameId, playerId, onReviewStateChange, onSubmitDone,
 }: {
   game: GameSession; player: PlayerState; assets: GameAsset[];
-  gameId: string; playerId: string; onSubmitDone: () => void;
+  gameId: string; playerId: string;
+  onReviewStateChange: (reviewing: boolean) => void;
+  onSubmitDone: () => void;
 }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -443,6 +494,7 @@ function TradingPhase({
         player={player}
         assets={assets}
         isSubmitting={submitMutation.isPending}
+        onReviewStateChange={onReviewStateChange}
         onSubmit={(trades) => submitMutation.mutate(trades)}
       />
     </motion.div>
@@ -468,11 +520,18 @@ function ResearchPhase({
   const [messages, setMessages] = useState<ResearchMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
+  const [analystError, setAnalystError] = useState<string | null>(null);
   const MAX_QUESTIONS = 5;
+  const suggestedQuestions = [
+    "Which assets are most exposed to this round's policy signals?",
+    "What are the biggest risks in clean-energy equities this round?",
+    "Which macro trends should influence my allocation decision?",
+  ];
 
-  async function askAnalyst() {
-    if (!question.trim() || isLoading || questionCount >= MAX_QUESTIONS) return;
-    const q = question.trim();
+  async function askAnalyst(overrideQuestion?: string) {
+    const q = (overrideQuestion ?? question).trim();
+    if (!q || isLoading || questionCount >= MAX_QUESTIONS) return;
+    setAnalystError(null);
     setQuestion("");
     setMessages((prev) => [...prev, { role: "user", content: q }]);
     setIsLoading(true);
@@ -486,8 +545,9 @@ function ResearchPhase({
       if (!res.ok) throw new Error(data.message || "Request failed");
       setMessages((prev) => [...prev, { role: "analyst", content: data.answer }]);
     } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-      setMessages((prev) => [...prev, { role: "analyst", content: "The analyst is unavailable right now. Please try again or proceed to trading." }]);
+      setQuestion(q);
+      setQuestionCount((count) => Math.max(0, count - 1));
+      setAnalystError(err.message || "The analyst is temporarily unavailable.");
     } finally {
       setIsLoading(false);
     }
@@ -504,8 +564,9 @@ function ResearchPhase({
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="max-w-3xl mx-auto p-8 space-y-6 bg-white"
+      className="bg-white"
     >
+      <div className="mx-auto max-w-3xl space-y-6 p-6 sm:p-8">
       <div className="text-center space-y-1 pt-4">
         <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0074B7] mb-2">Round {round}</span>
         <h2 className="font-sans font-bold text-3xl text-[#001E41]">Research Desk</h2>
@@ -530,6 +591,11 @@ function ResearchPhase({
                   : "bg-white border border-[#D9DFE7] text-[#001E41]"
               }`}>
                 {msg.content}
+                {msg.role === "analyst" && (
+                  <p className="mt-3 border-t border-[#D9DFE7] pt-2 text-[11px] leading-relaxed text-[#7B8998]">
+                    Educational analysis based on the simulation data. Consider the evidence and uncertainty before deciding.
+                  </p>
+                )}
               </div>
             </div>
           ))}
@@ -548,6 +614,23 @@ function ResearchPhase({
 
       {/* Input area */}
       <div className="bg-[#F4F6F9] border border-[#D9DFE7] rounded-xl p-5 space-y-3">
+        {messages.length === 0 && (
+          <div>
+            <p className="text-xs font-semibold text-[#494949]">Suggested questions</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {suggestedQuestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => setQuestion(suggestion)}
+                  className="rounded-full border border-[#C9D2DD] bg-white px-3 py-1.5 text-left text-xs text-[#001E41] hover:border-[#0074B7] hover:bg-[#EAF5FB]"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {/* Asset selector */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-[#494949] uppercase tracking-wider">Focus on asset (optional)</label>
@@ -567,7 +650,7 @@ function ResearchPhase({
         <div className="space-y-1.5">
           <div className="flex justify-between">
             <label className="text-xs font-semibold text-[#494949] uppercase tracking-wider">Your question</label>
-            <span className="text-xs text-[#9AA8B4]">{question.length}/500 • {questionCount}/{MAX_QUESTIONS} used</span>
+            <span className="text-xs text-[#7B8998]">{question.length}/500 · {MAX_QUESTIONS - questionCount} questions available</span>
           </div>
           <textarea
             value={question}
@@ -582,12 +665,19 @@ function ResearchPhase({
         {questionCount >= MAX_QUESTIONS && (
           <p className="text-xs text-[#8A5A00] flex items-center gap-1">
             <Info className="h-3.5 w-3.5" />
-            Maximum questions reached for this round.
+            You have used all five questions for this round. You can continue to allocation.
           </p>
         )}
 
+        {analystError && (
+          <div role="alert" className="rounded-lg border border-[#C4372C]/25 bg-[#FBE4E1] p-3 text-sm text-[#8F2B24]">
+            <p className="font-semibold">The analyst is temporarily unavailable.</p>
+            <p className="mt-1 text-xs">Your question has been kept. Try again or continue without using a question.</p>
+          </div>
+        )}
+
         <Button
-          onClick={askAnalyst}
+          onClick={() => askAnalyst()}
           disabled={!question.trim() || isLoading || questionCount >= MAX_QUESTIONS}
           className="w-full bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px] h-11"
         >
@@ -595,16 +685,19 @@ function ResearchPhase({
         </Button>
       </div>
 
-      <div className="flex justify-center pt-2">
-        <Button
-          data-testid="proceed-to-trading-btn"
-          size="lg"
-          onClick={onContinue}
-          className="gap-2 bg-[#001E41] text-white hover:bg-[#0074B7] rounded-[10px] px-6 h-11"
-        >
-          Proceed to Trading <BarChart3 className="h-4 w-4" />
-        </Button>
       </div>
+      <StickyActionBar
+        summary={<><strong className="text-[#001E41]">{MAX_QUESTIONS - questionCount} research questions</strong> available this round</>}
+        primary={
+          <Button
+            data-testid="proceed-to-trading-btn"
+            onClick={onContinue}
+            className="h-11 w-full gap-2 rounded-[10px] bg-[#001E41] px-6 text-white hover:bg-[#0074B7] sm:w-auto"
+          >
+            Continue to allocation <BarChart3 className="h-4 w-4" />
+          </Button>
+        }
+      />
     </motion.div>
   );
 }
@@ -660,6 +753,20 @@ function ResultsPhase({
     .sort((a, b) => b.value - a.value);
 
   const totalInvested = heatmapItems.reduce((s, x) => s + x.value, 0);
+  const performanceDrivers = player.portfolio.holdings
+    .map((holding) => {
+      const asset = assets.find((candidate) => candidate.id === holding.assetId);
+      if (!asset) return null;
+      const currentPrice = getAssetPrice(asset, round);
+      const previousPrice = getPrevPrice(asset, round);
+      const contribution = holding.units * (currentPrice - previousPrice);
+      const returnPct = previousPrice > 0 ? ((currentPrice - previousPrice) / previousPrice) * 100 : 0;
+      return { id: asset.id, name: asset.name, contribution, returnPct };
+    })
+    .filter((driver): driver is { id: string; name: string; contribution: number; returnPct: number } => driver !== null)
+    .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution));
+  const leadingDrivers = performanceDrivers.slice(0, 4);
+  const playerRank = leaderboard?.find((entry) => entry.playerId === player.id)?.rank;
 
   return (
     <motion.div
@@ -690,6 +797,42 @@ function ResultsPhase({
           </div>
         )}
       </div>
+
+      <section className="rounded-xl border border-[#D9DFE7] bg-[#F7F9FB] p-5" aria-labelledby="performance-drivers-heading">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0074B7]">Cause and effect</p>
+            <h3 id="performance-drivers-heading" className="mt-1 text-lg font-semibold text-[#001E41]">What drove this result</h3>
+          </div>
+          <p className="text-xs text-[#647487]">Contribution shows the dollar effect of each price move on your portfolio.</p>
+        </div>
+        {leadingDrivers.length > 0 ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {leadingDrivers.map((driver) => (
+              <div key={driver.id} className="rounded-lg border border-[#D9DFE7] bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#001E41]">{driver.name}</p>
+                    <p className={`mt-1 text-xs font-medium ${driver.returnPct >= 0 ? "text-[#00875A]" : "text-[#C4372C]"}`}>
+                      Asset price {driver.returnPct >= 0 ? "rose" : "fell"} {Math.abs(driver.returnPct).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-mono text-sm font-bold tabular-nums ${driver.contribution >= 0 ? "text-[#00875A]" : "text-[#C4372C]"}`}>
+                      {driver.contribution >= 0 ? "+" : "−"}{formatMoney(Math.abs(driver.contribution))}
+                    </p>
+                    <p className="mt-0.5 text-[10px] uppercase tracking-wider text-[#7B8998]">Contribution</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 rounded-lg border border-dashed border-[#B8C7D6] bg-white px-4 py-6 text-center text-sm text-[#647487]">
+            The portfolio remained in cash, so no asset price movement affected this round.
+          </div>
+        )}
+      </section>
 
       {/* Portfolio Heatmap */}
       {heatmapItems.length > 0 && (
@@ -770,7 +913,10 @@ function ResultsPhase({
       {leaderboard && leaderboard.length > 0 && (
         <div className="bg-white border border-[#D9DFE7] rounded-xl overflow-hidden">
           <div className="bg-[#001E41] text-white px-5 py-3">
-            <h3 className="font-sans font-semibold text-sm uppercase tracking-wider">Leaderboard</h3>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-sans font-semibold text-sm uppercase tracking-wider">Leaderboard</h3>
+              {playerRank && <span className="text-xs text-white/75">Your current rank: #{playerRank}</span>}
+            </div>
           </div>
           <div>
             {leaderboard.slice(0, 10).map((entry, idx) => {
@@ -803,6 +949,9 @@ function ResultsPhase({
               );
             })}
           </div>
+          <p className="border-t border-[#D9DFE7] bg-[#F7F9FB] px-5 py-3 text-xs leading-relaxed text-[#647487]">
+            Player display names and portfolio values are visible to participants in this game. Emails are not shown here.
+          </p>
         </div>
       )}
 
@@ -1092,7 +1241,7 @@ function FinishedPhase({
           </div>
           <div className="p-5">
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#D9DFE7" />
                   <XAxis dataKey="round" tick={{ fill: "#494949", fontSize: 12 }} tickFormatter={(v) => `R${v}`} stroke="#D9DFE7" />

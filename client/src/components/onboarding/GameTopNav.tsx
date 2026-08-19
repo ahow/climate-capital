@@ -8,6 +8,7 @@ import {
 import { HowToPlayContent } from "@/components/onboarding/HowToPlayContent";
 import { InvestmentUniverseContent } from "@/components/onboarding/InvestmentUniverseContent";
 import { LeaderboardContent } from "@/components/onboarding/LeaderboardContent";
+import { GameJourney, type JourneyStage } from "@/components/journey/GameJourney";
 
 type Panel = "howToPlay" | "universe" | "leaderboard" | null;
 
@@ -28,23 +29,23 @@ export function GameTopNav({
   portfolioValue,
   round,
   maxRounds,
-  phase,
+  currentStage,
 }: {
   playerName: string;
   portfolioValue: number;
   round: number;
   maxRounds: number;
-  phase: string;
+  currentStage: JourneyStage;
 }) {
   const [panel, setPanel] = useState<Panel>(null);
 
   const navLinkClass =
-    "text-sm text-[#494949] hover:text-[#001E41] transition-colors";
+    "rounded-md px-2.5 py-1.5 text-xs font-medium text-[#566779] transition-colors hover:bg-[#F4F6F9] hover:text-[#001E41]";
 
   return (
     <>
-      <nav className="border-b border-[#D9DFE7] bg-white px-4 py-2.5 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6">
+      <nav className="border-b border-[#D9DFE7] bg-white px-4 py-2.5 flex items-center justify-between gap-4" aria-label="Game navigation">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-6">
           <div className="flex items-center gap-2 shrink-0">
             <svg width="20" height="20" viewBox="0 0 28 28" aria-hidden>
               <circle cx="14" cy="14" r="12" fill="none" stroke="#001E41" strokeWidth="2" />
@@ -54,14 +55,14 @@ export function GameTopNav({
               CLIMATE CAPITAL
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-1 md:flex">
             <button
               type="button"
               data-testid="nav-how-to-play"
               className={navLinkClass}
               onClick={() => setPanel("howToPlay")}
             >
-              How to Play
+              How it works
             </button>
             <button
               type="button"
@@ -69,7 +70,7 @@ export function GameTopNav({
               className={navLinkClass}
               onClick={() => setPanel("universe")}
             >
-              Investment Universe
+              Explore assets
             </button>
             <button
               type="button"
@@ -80,13 +81,18 @@ export function GameTopNav({
               Leaderboard
             </button>
           </div>
+          <div className="flex items-center gap-1 md:hidden">
+            <button type="button" className={navLinkClass} onClick={() => setPanel("howToPlay")}>
+              Guide
+            </button>
+            <button type="button" className={navLinkClass} onClick={() => setPanel("universe")}>
+              Assets
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-3 text-sm shrink-0">
-          <span className="text-[#494949] hidden md:inline">
-            Round <span className="text-[#001E41] font-semibold">{round}</span>/{maxRounds}
-          </span>
-          <span className="hidden lg:inline-flex items-center rounded-md bg-[#F4F6F9] px-2 py-0.5 text-xs font-medium text-[#001E41] capitalize">
-            {phase}
+          <span className="hidden text-[#566779] sm:inline">
+            Round <span className="font-semibold text-[#001E41]">{round}</span> of {maxRounds}
           </span>
           <span className="text-[#001E41] font-medium hidden sm:inline truncate max-w-[120px]">
             {playerName}
@@ -96,11 +102,12 @@ export function GameTopNav({
           </span>
         </div>
       </nav>
+      <GameJourney currentStage={currentStage} />
 
       <Sheet open={panel !== null} onOpenChange={(open) => { if (!open) setPanel(null); }}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-2xl p-0 overflow-y-auto bg-white"
+          className="w-full p-0 overflow-y-auto bg-white sm:max-w-[70vw] lg:max-w-[52vw]"
         >
           {panel === "leaderboard" ? (
             <div className="p-6">
@@ -113,7 +120,7 @@ export function GameTopNav({
             <>
               <SheetHeader className="sr-only">
                 <SheetTitle>
-                  {panel === "howToPlay" ? "How to Play" : "Investment Universe"}
+                  {panel === "howToPlay" ? "How it works" : "Explore assets"}
                 </SheetTitle>
               </SheetHeader>
               {panel === "howToPlay" && <HowToPlayContent />}

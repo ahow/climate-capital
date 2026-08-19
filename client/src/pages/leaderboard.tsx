@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from "framer-motion";
 interface LeaderboardEntry {
   rank: number;
   name: string;
-  email: string;
   totalValue: number;
   gameCode: string;
   completedRound: number;
@@ -20,15 +19,6 @@ function formatValue(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
   return `$${v.toFixed(0)}`;
-}
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return email;
-  const masked = local.length > 2
-    ? local[0] + "•".repeat(Math.min(local.length - 2, 4)) + local[local.length - 1]
-    : local;
-  return `${masked}@${domain}`;
 }
 
 function RankBadge({ rank }: { rank: number }) {
@@ -106,6 +96,7 @@ export default function LeaderboardPage() {
               onClick={fetchLeaderboard}
               disabled={loading}
               className="text-white/70 hover:text-white hover:bg-white/10"
+              aria-label="Refresh leaderboard"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             </Button>
@@ -138,13 +129,19 @@ export default function LeaderboardPage() {
         <p className="text-[#A8D0E6] text-sm">
           Top climate investors across all games
         </p>
+        <div className="mx-auto mt-5 max-w-2xl rounded-lg border border-white/10 bg-white/[0.05] px-4 py-3 text-left text-xs leading-relaxed text-white/65">
+          <strong className="text-white/90">Public information:</strong> display name, portfolio value, completed round, and game code. Email addresses are used for session recovery and are never shown on this leaderboard.
+        </div>
       </div>
 
       {/* Error state */}
       {error && (
         <div className="max-w-4xl mx-auto px-6">
           <div className="rounded-xl border border-[#C4372C]/30 bg-[#C4372C]/10 px-4 py-3 text-sm text-[#E57373]">
-            {error}
+            <p>{error}</p>
+            <Button type="button" variant="ghost" size="sm" onClick={fetchLeaderboard} className="mt-2 border border-white/15 text-white hover:bg-white/10">
+              Try again
+            </Button>
           </div>
         </div>
       )}
@@ -179,7 +176,7 @@ export default function LeaderboardPage() {
       {/* Top 3 podium */}
       {!loading && topThree.length > 0 && (
         <div className="max-w-4xl mx-auto px-6 pb-8">
-          <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto sm:grid-cols-3">
             {/* 2nd place */}
             <AnimatePresence>
               {topThree[1] && (
@@ -187,16 +184,16 @@ export default function LeaderboardPage() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={showScores ? { opacity: 1, y: 0 } : {}}
                   transition={{ delay: 0.3, duration: 0.5 }}
-                  className="flex flex-col items-center mt-8"
+                  className="order-2 flex flex-col items-center sm:order-1 sm:mt-8"
                 >
                   <div className="bg-white/5 border border-white/10 rounded-xl p-4 w-full text-center backdrop-blur-sm">
                     <RankBadge rank={2} />
                     <p className="font-semibold text-sm mt-3 truncate">{topThree[1].name}</p>
-                    <p className="text-xs text-[#A8D0E6] mt-1 truncate">{maskEmail(topThree[1].email)}</p>
+                    <p className="text-xs text-[#A8D0E6] mt-1">Completed round {topThree[1].completedRound}</p>
                     <p className="font-mono font-bold text-lg text-[#A8D0E6] mt-2">
                       {formatValue(topThree[1].totalValue)}
                     </p>
-                    <p className="text-xs text-white/40 mt-1">Round {topThree[1].completedRound}</p>
+                    <p className="text-xs text-white/40 mt-1">Game {topThree[1].gameCode}</p>
                   </div>
                 </motion.div>
               )}
@@ -208,7 +205,7 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={showScores ? { opacity: 1, y: 0 } : {}}
                 transition={{ delay: 0.1, duration: 0.5 }}
-                className="flex flex-col items-center"
+                className="order-1 flex flex-col items-center sm:order-2"
               >
                 <div className="bg-gradient-to-b from-[#E6A100]/10 to-transparent border border-[#E6A100]/30 rounded-xl p-5 w-full text-center relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-[#E6A100]/5 to-transparent" />
@@ -217,11 +214,11 @@ export default function LeaderboardPage() {
                       <RankBadge rank={1} />
                     </div>
                     <p className="font-bold text-base mt-3 truncate">{topThree[0].name}</p>
-                    <p className="text-xs text-[#A8D0E6] mt-1 truncate">{maskEmail(topThree[0].email)}</p>
+                    <p className="text-xs text-[#A8D0E6] mt-1">Completed round {topThree[0].completedRound}</p>
                     <p className="font-mono font-bold text-2xl text-[#E6A100] mt-3">
                       {formatValue(topThree[0].totalValue)}
                     </p>
-                    <p className="text-xs text-white/40 mt-1">Round {topThree[0].completedRound}</p>
+                    <p className="text-xs text-white/40 mt-1">Game {topThree[0].gameCode}</p>
                   </div>
                 </div>
               </motion.div>
@@ -234,16 +231,16 @@ export default function LeaderboardPage() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={showScores ? { opacity: 1, y: 0 } : {}}
                   transition={{ delay: 0.5, duration: 0.5 }}
-                  className="flex flex-col items-center mt-8"
+                  className="order-3 flex flex-col items-center sm:mt-8"
                 >
                   <div className="bg-white/5 border border-white/10 rounded-xl p-4 w-full text-center backdrop-blur-sm">
                     <RankBadge rank={3} />
                     <p className="font-semibold text-sm mt-3 truncate">{topThree[2].name}</p>
-                    <p className="text-xs text-[#A8D0E6] mt-1 truncate">{maskEmail(topThree[2].email)}</p>
+                    <p className="text-xs text-[#A8D0E6] mt-1">Completed round {topThree[2].completedRound}</p>
                     <p className="font-mono font-bold text-lg text-[#B87333] mt-2">
                       {formatValue(topThree[2].totalValue)}
                     </p>
-                    <p className="text-xs text-white/40 mt-1">Round {topThree[2].completedRound}</p>
+                    <p className="text-xs text-white/40 mt-1">Game {topThree[2].gameCode}</p>
                   </div>
                 </motion.div>
               )}
@@ -269,7 +266,7 @@ export default function LeaderboardPage() {
                 <RankBadge rank={entry.rank} />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{entry.name}</p>
-                  <p className="text-xs text-[#A8D0E6] truncate">{maskEmail(entry.email)}</p>
+                  <p className="text-xs text-[#A8D0E6]">Completed round {entry.completedRound}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-mono font-bold text-sm text-white">

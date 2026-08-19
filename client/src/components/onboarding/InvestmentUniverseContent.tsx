@@ -10,7 +10,7 @@ import {
   CartesianGrid,
   ReferenceDot,
 } from "recharts";
-import { ChevronRight, ChevronLeft, X, Check } from "lucide-react";
+import { ChevronRight, ChevronLeft, X, Check, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -52,10 +52,10 @@ function riskChipClass(risk: string): string {
   }
 }
 
-// A ticker-style pseudonym derived from the asset name (no real tickers exist).
+// A ticker-style pseudonym derived from the unique asset id (no real tickers exist).
 function tickerFor(asset: UniverseAsset): string {
-  const letters = asset.name.replace(/[^A-Za-z]/g, "").toUpperCase();
-  return letters.slice(0, 4) || asset.id.slice(0, 4).toUpperCase();
+  const letters = asset.id.replace(/[^A-Za-z]/g, "").toUpperCase();
+  return letters.slice(0, 4) || asset.name.replace(/[^A-Za-z]/g, "").slice(0, 4).toUpperCase();
 }
 
 // The price series shown on charts: round 0 (start) through round 7.
@@ -80,23 +80,29 @@ function Sparkline({ series }: { series: number[] }) {
     .join(" ");
   const rising = series[series.length - 1] >= series[0];
   const stroke = rising ? "#00875A" : "#C4372C";
+  const changePct = ((series[series.length - 1] - series[0]) / series[0]) * 100;
   return (
-    <svg
-      width={w}
-      height={h}
-      viewBox={`0 0 ${w} ${h}`}
-      className="overflow-visible"
-      aria-hidden
-    >
-      <polyline
-        points={points}
-        fill="none"
-        stroke={stroke}
-        strokeWidth={1.5}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
+    <span>
+      <svg
+        width={w}
+        height={h}
+        viewBox={`0 0 ${w} ${h}`}
+        className="overflow-visible"
+        aria-hidden
+      >
+        <polyline
+          points={points}
+          fill="none"
+          stroke={stroke}
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className="sr-only">
+        Historical price trend from {series[0].toFixed(0)} to {series[series.length - 1].toFixed(0)}, {changePct >= 0 ? "up" : "down"} {Math.abs(changePct).toFixed(0)} percent.
+      </span>
+    </span>
   );
 }
 
@@ -104,8 +110,15 @@ function Sparkline({ series }: { series: number[] }) {
 function DetailChart({ asset }: { asset: UniverseAsset }) {
   const data = priceSeries(asset).map((value, round) => ({ round, value }));
   const notes = asset.historicalNotes ?? [];
+  const series = priceSeries(asset);
+  const peak = Math.max(...series);
+  const low = Math.min(...series);
   return (
-    <div className="h-64">
+    <div>
+      <p className="sr-only">
+        {asset.name} price history starts at {series[0].toFixed(0)}, reaches a low of {low.toFixed(0)} and a high of {peak.toFixed(0)}, and ends at {series[series.length - 1].toFixed(0)}.
+      </p>
+      <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 10, right: 16, bottom: 5, left: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#D9DFE7" />
@@ -157,6 +170,7 @@ function DetailChart({ asset }: { asset: UniverseAsset }) {
           })}
         </LineChart>
       </ResponsiveContainer>
+      </div>
       {notes.length > 0 && (
         <ul className="mt-3 space-y-1.5">
           {notes.map((note) => (
@@ -325,17 +339,21 @@ function ChipFilter<T extends string>({
   options,
   selected,
   onToggle,
+  hideLabel = false,
 }: {
   label: string;
   options: readonly T[];
   selected: Set<T>;
   onToggle: (value: T) => void;
+  hideLabel?: boolean;
 }) {
   return (
     <div className="space-y-1.5">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-[#494949]">
-        {label}
-      </p>
+      {!hideLabel && (
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#494949]">
+          {label}
+        </p>
+      )}
       <div className="flex flex-wrap gap-1.5">
         {options.map((opt) => {
           const active = selected.has(opt);
@@ -358,6 +376,47 @@ function ChipFilter<T extends string>({
         })}
       </div>
     </div>
+  );
+}
+
+function FilterDisclosure({
+  label,
+  count,
+  children,
+}: {
+  label: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className="group rounded-lg border border-[#D9DFE7] bg-white">
+      <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2.5 text-sm font-medium text-[#001E41]">
+        <span>{label}</span>
+        <span className="flex items-center gap-2">
+          {count > 0 && (
+            <span className="rounded-full bg-[#EAF5FB] px-2 py-0.5 text-[10px] font-semibold text-[#0074B7]">
+              {count}
+            </span>
+          )}
+          <ChevronRight className="h-4 w-4 text-[#7B8998] transition-transform group-open:rotate-90" aria-hidden />
+        </span>
+      </summary>
+      <div className="border-t border-[#D9DFE7] p-3">{children}</div>
+    </details>
+  );
+}
+
+function ActiveFilter({ value, onRemove }: { value: string; onRemove: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onRemove}
+      className="inline-flex items-center gap-1 rounded-full border border-[#B8C7D6] bg-white px-2.5 py-1 text-xs font-medium text-[#001E41] hover:border-[#0074B7]"
+      aria-label={`Remove ${value} filter`}
+    >
+      {value}
+      <X className="h-3 w-3 text-[#647487]" aria-hidden />
+    </button>
   );
 }
 
@@ -388,6 +447,7 @@ export function InvestmentUniverseContent({ footer }: { footer?: React.ReactNode
   const [selectedTiers, setSelectedTiers] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [detailId, setDetailId] = useState<string | null>(null);
+  const selectedCount = selectedSectors.size + selectedRisks.size + selectedTiers.size;
 
   function toggle<T extends string>(
     setter: React.Dispatch<React.SetStateAction<Set<T>>>,
@@ -399,6 +459,12 @@ export function InvestmentUniverseContent({ footer }: { footer?: React.ReactNode
       else next.add(value);
       return next;
     });
+  }
+
+  function clearFilters() {
+    setSelectedSectors(new Set());
+    setSelectedRisks(new Set());
+    setSelectedTiers(new Set());
   }
 
   const filtered = useMemo(() => {
@@ -447,46 +513,104 @@ export function InvestmentUniverseContent({ footer }: { footer?: React.ReactNode
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
-        {/* Filters + sort */}
-        <div className="rounded-xl border border-[#D9DFE7] bg-[#F4F6F9] p-5 space-y-4">
-          <ChipFilter
-            label="Sector"
-            options={sectors}
-            selected={selectedSectors}
-            onToggle={(v) => toggle(setSelectedSectors, v)}
-          />
-          <ChipFilter
-            label="Risk profile"
-            options={RISK_PROFILES}
-            selected={selectedRisks}
-            onToggle={(v) => toggle(setSelectedRisks, v)}
-          />
-          <ChipFilter
-            label="Valuation tier"
-            options={VALUATION_TIERS}
-            selected={selectedTiers}
-            onToggle={(v) => toggle(setSelectedTiers, v)}
-          />
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-[#494949]">
+        {/* Compact filters + sort */}
+        <div className="rounded-xl border border-[#D9DFE7] bg-[#F4F6F9] p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-[#0074B7]" aria-hidden />
+              <p className="text-sm font-semibold text-[#001E41]">Filter the opportunity set</p>
+              {selectedCount > 0 && (
+                <span className="rounded-full bg-[#001E41] px-2 py-0.5 text-[10px] font-semibold text-white">
+                  {selectedCount} active
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-[#647487]" aria-live="polite">
+              Showing {filtered.length} of {assets.length}
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-2 md:grid-cols-3">
+            <FilterDisclosure label="Sector" count={selectedSectors.size}>
+              <ChipFilter
+                label="Sector"
+                hideLabel
+                options={sectors}
+                selected={selectedSectors}
+                onToggle={(value) => toggle(setSelectedSectors, value)}
+              />
+            </FilterDisclosure>
+            <FilterDisclosure label="Risk" count={selectedRisks.size}>
+              <ChipFilter
+                label="Risk profile"
+                hideLabel
+                options={RISK_PROFILES}
+                selected={selectedRisks}
+                onToggle={(value) => toggle(setSelectedRisks, value)}
+              />
+            </FilterDisclosure>
+            <FilterDisclosure label="Type" count={selectedTiers.size}>
+              <ChipFilter
+                label="Valuation tier"
+                hideLabel
+                options={VALUATION_TIERS}
+                selected={selectedTiers}
+                onToggle={(value) => toggle(setSelectedTiers, value)}
+              />
+            </FilterDisclosure>
+          </div>
+
+          {selectedCount > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#D9DFE7] pt-4">
+              {Array.from(selectedSectors).map((value) => (
+                <ActiveFilter key={`sector-${value}`} value={value} onRemove={() => toggle(setSelectedSectors, value)} />
+              ))}
+              {Array.from(selectedRisks).map((value) => (
+                <ActiveFilter key={`risk-${value}`} value={value} onRemove={() => toggle(setSelectedRisks, value)} />
+              ))}
+              {Array.from(selectedTiers).map((value) => (
+                <ActiveFilter key={`tier-${value}`} value={value} onRemove={() => toggle(setSelectedTiers, value)} />
+              ))}
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-[#0074B7] hover:text-[#001E41]"
+              >
+                <RotateCcw className="h-3.5 w-3.5" aria-hidden /> Clear all
+              </button>
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[#D9DFE7] pt-4">
+            <label htmlFor="universe-sort" className="text-[11px] font-semibold uppercase tracking-wider text-[#494949]">
               Sort by
             </label>
             <select
+              id="universe-sort"
               value={sortKey}
-              onChange={(e) => setSortKey(e.target.value as SortKey)}
-              className="bg-white border border-[#D9DFE7] rounded-md px-3 py-1.5 text-sm text-[#001E41] focus:outline-none focus:ring-2 focus:ring-[#0074B7] focus:border-[#0074B7]"
+              onChange={(event) => setSortKey(event.target.value as SortKey)}
+              className="rounded-md border border-[#D9DFE7] bg-white px-3 py-1.5 text-sm text-[#001E41] focus:outline-none focus:ring-2 focus:ring-[#0074B7]"
             >
               <option value="name">Name</option>
               <option value="sector">Sector</option>
               <option value="risk">Risk</option>
             </select>
-            <span className="text-xs text-[#9AA8B4] ml-auto">
-              Showing {filtered.length} of {assets.length}
-            </span>
           </div>
         </div>
 
         {/* Card grid */}
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-[#B9C6D3] bg-[#F7F9FB] px-6 py-12 text-center">
+            <SlidersHorizontal className="mx-auto h-8 w-8 text-[#7B8998]" aria-hidden />
+            <h3 className="mt-4 text-lg font-semibold text-[#001E41]">No assets match these filters</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#647487]">
+              This combination does not overlap in the simulation. Remove a filter or clear the selection to view available assets.
+            </p>
+            <Button type="button" onClick={clearFilters} className="mt-5 bg-[#001E41] text-white hover:bg-[#0074B7]">
+              Clear all filters
+            </Button>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map((asset) => (
             <button
@@ -533,6 +657,7 @@ export function InvestmentUniverseContent({ footer }: { footer?: React.ReactNode
             </button>
           ))}
         </div>
+        )}
 
         {footer && <div className="flex justify-center pt-6">{footer}</div>}
       </div>
