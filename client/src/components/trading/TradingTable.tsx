@@ -1,7 +1,7 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { Lock, RefreshCw, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { Lock, RefreshCw, AlertTriangle, TrendingUp, TrendingDown, ArrowLeft, CheckCircle2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +9,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { GameAsset, Holding, PlayerState, Trade } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { StickyActionBar } from "@/components/journey/GameJourney";
 
 // Mirror the server's per-position cap (server/dbStorage.ts → MAX_POSITION_PCT).
 // The slider range itself spans the full investable amount, but a proposed
@@ -94,7 +96,7 @@ function PriceSparkline({
 
   return (
     <div style={{ width: 140, height: 50 }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <LineChart data={data} margin={{ top: 6, right: 6, bottom: 6, left: 6 }}>
           <Line
             type="monotone"
@@ -135,6 +137,7 @@ function PriceSparkline({
 // ── Position slider (Radix primitive directly, for full marker/colour control) ──
 
 function PositionSlider({
+  assetName,
   value,
   max,
   originalValue,
@@ -142,6 +145,7 @@ function PositionSlider({
   disabled,
   onChange,
 }: {
+  assetName: string;
   value: number;
   max: number;
   originalValue: number;
@@ -168,7 +172,8 @@ function PositionSlider({
         </SliderPrimitive.Track>
         <SliderPrimitive.Thumb
           className="block h-4 w-4 rounded-full border-2 border-white bg-[#001E41] shadow ring-offset-background transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0074B7] disabled:pointer-events-none disabled:opacity-40"
-          aria-label="Adjust position"
+          aria-label={`Proposed allocation in ${assetName}`}
+          aria-valuetext={formatMillions(value)}
         />
       </SliderPrimitive.Root>
 
@@ -190,6 +195,43 @@ function PositionSlider({
         </TooltipProvider>
       )}
     </div>
+  );
+}
+
+function AllocationValueInput({
+  assetName,
+  value,
+  max,
+  disabled,
+  onChange,
+}: {
+  assetName: string;
+  value: number;
+  max: number;
+  disabled?: boolean;
+  onChange: (value: number) => void;
+}) {
+  const millions = Number((value / 1_000_000).toFixed(2));
+  return (
+    <label className="mx-auto mt-1 flex w-fit items-center gap-1 rounded-md border border-[#D9DFE7] bg-white px-2 py-1 text-xs text-[#647487] focus-within:border-[#0074B7] focus-within:ring-2 focus-within:ring-[#0074B7]/20">
+      <span className="sr-only">Proposed allocation in {assetName}, millions of dollars</span>
+      <span aria-hidden>$</span>
+      <input
+        type="number"
+        min={0}
+        max={Number((max / 1_000_000).toFixed(2))}
+        step={1}
+        value={millions}
+        disabled={disabled}
+        onChange={(event) => {
+          const next = Number(event.target.value);
+          if (Number.isNaN(next)) return;
+          onChange(Math.max(0, Math.min(max, next * 1_000_000)));
+        }}
+        className="w-16 bg-transparent text-right font-mono font-semibold tabular-nums text-[#001E41] outline-none disabled:opacity-50"
+      />
+      <span aria-hidden>M</span>
+    </label>
   );
 }
 
@@ -313,10 +355,18 @@ const Row = memo(function TradeRow({
           {formatMillions(proposed)}
         </div>
         <PositionSlider
+          assetName={asset.name}
           value={proposed}
           max={max}
           originalValue={positionValue}
           step={step}
+          disabled={locked}
+          onChange={handle}
+        />
+        <AllocationValueInput
+          assetName={asset.name}
+          value={proposed}
+          max={max}
           disabled={locked}
           onChange={handle}
         />
@@ -462,10 +512,18 @@ const MobileCard = memo(function MobileCard({
         {formatMillions(proposed)}
       </div>
       <PositionSlider
+        assetName={asset.name}
         value={proposed}
         max={max}
         originalValue={positionValue}
         step={step}
+        disabled={locked}
+        onChange={handle}
+      />
+      <AllocationValueInput
+        assetName={asset.name}
+        value={proposed}
+        max={max}
         disabled={locked}
         onChange={handle}
       />
@@ -523,11 +581,13 @@ export function TradingTable({
   assets,
   isSubmitting,
   onSubmit,
+  onReviewStateChange,
 }: {
   player: PlayerState;
   assets: GameAsset[];
   isSubmitting: boolean;
   onSubmit: (trades: Trade[]) => void;
+  onReviewStateChange?: (reviewing: boolean) => void;
 }) {
   const round = player.currentRound;
 
@@ -569,6 +629,15 @@ export function TradingTable({
   }, [baseRows]);
 
   const [values, setValues] = useState<Record<string, number>>(initialValues);
+  const [reviewing, setReviewing] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   // If the underlying player data changes (e.g. refetch), re-seed any values we
   // haven't got an entry for, without clobbering in-progress edits.
@@ -586,7 +655,9 @@ export function TradingTable({
 
   const resetAll = useCallback(() => {
     setValues(initialValues);
-  }, [initialValues]);
+    setReviewing(false);
+    onReviewStateChange?.(false);
+  }, [initialValues, onReviewStateChange]);
 
   // ── Running totals ──
   const totalPortfolioValue = useMemo(
@@ -659,12 +730,150 @@ export function TradingTable({
     onSubmit(buildTrades());
   }
 
+  function beginReview() {
+    setReviewing(true);
+    onReviewStateChange?.(true);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
+  function returnToAllocation() {
+    setReviewing(false);
+    onReviewStateChange?.(false);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+
   const rows: RowAsset[] = baseRows.map((r) => ({
     ...r,
     proposed: merged[r.asset.id] ?? r.positionValue,
     proposedRoundUpTo: round,
     overLimit: overLimitIds.has(r.asset.id),
   }));
+
+  const proposedPositions = rows
+    .filter((row) => row.proposed >= 1)
+    .sort((a, b) => b.proposed - a.proposed);
+  const investedAfter = Math.max(0, totalPortfolioValue - netCashAfter);
+  const cashShare = totalPortfolioValue > 0 ? (netCashAfter / totalPortfolioValue) * 100 : 0;
+  const changedPositions = rows.filter((row) => Math.abs(row.proposed - row.positionValue) >= 1).length;
+
+  if (reviewing) {
+    return (
+      <div className="flex min-h-[calc(100vh-120px)] flex-col bg-[#F4F6F9]">
+        <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+          <button
+            type="button"
+            onClick={returnToAllocation}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-[#0074B7] hover:text-[#001E41]"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden /> Edit allocation
+          </button>
+
+          <div className="mt-5 flex flex-col gap-4 border-b border-[#D9DFE7] pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0074B7]">Round {round} · Review</p>
+              <h2 className="mt-1 text-3xl font-bold tracking-[-0.02em] text-[#001E41]">Review your portfolio</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#647487]">
+                This is the final check before the simulation applies the round’s market movement. Confirm only when the proposed allocations below match your intention.
+              </p>
+            </div>
+            <div className="rounded-lg border border-[#0074B7]/25 bg-[#EAF5FB] px-4 py-3 text-sm text-[#001E41]">
+              <CheckCircle2 className="mr-1.5 inline h-4 w-4 text-[#0074B7]" aria-hidden />
+              All portfolio rules are satisfied
+            </div>
+          </div>
+
+          <dl className="mt-6 grid gap-3 sm:grid-cols-3">
+            <ReviewMetric label="Portfolio total" value={formatMillions(totalPortfolioValue)} detail="Calculated from current round prices" />
+            <ReviewMetric label="Invested after proposal" value={formatMillions(investedAfter)} detail={`${proposedPositions.length} active position${proposedPositions.length === 1 ? "" : "s"}`} />
+            <ReviewMetric label="Cash after proposal" value={formatMillions(netCashAfter)} detail={`${cashShare.toFixed(1)}% of the portfolio`} />
+          </dl>
+
+          <section className="mt-6 overflow-hidden rounded-xl border border-[#D9DFE7] bg-white" aria-labelledby="review-positions-heading">
+            <div className="flex items-center justify-between gap-3 border-b border-[#D9DFE7] bg-[#F7F9FB] px-5 py-4">
+              <div>
+                <h3 id="review-positions-heading" className="text-sm font-semibold text-[#001E41]">Proposed positions</h3>
+                <p className="mt-0.5 text-xs text-[#647487]">Final allocation at the start of this round</p>
+              </div>
+              <span className="text-xs font-medium text-[#647487]">{changedPositions} changed</span>
+            </div>
+
+            <div className="divide-y divide-[#EDF0F4]">
+              {proposedPositions.length === 0 ? (
+                <div className="px-5 py-8 text-center">
+                  <p className="font-semibold text-[#001E41]">Hold the full portfolio in cash</p>
+                  <p className="mt-1 text-sm text-[#647487]">No asset positions will be held for this round.</p>
+                </div>
+              ) : (
+                proposedPositions.map((row) => {
+                  const delta = row.proposed - row.positionValue;
+                  const share = totalPortfolioValue > 0 ? (row.proposed / totalPortfolioValue) * 100 : 0;
+                  return (
+                    <div key={row.asset.id} className="grid gap-3 px-5 py-4 sm:grid-cols-[1fr_auto_auto] sm:items-center">
+                      <div>
+                        <p className="text-sm font-semibold text-[#001E41]">{row.asset.name}</p>
+                        <p className="mt-0.5 text-xs text-[#647487]">{row.asset.sector} · {row.asset.riskProfile} risk</p>
+                      </div>
+                      <div className="sm:text-right">
+                        <p className="font-mono text-sm font-semibold tabular-nums text-[#001E41]">{formatMillions(row.proposed)}</p>
+                        <p className="text-xs text-[#647487]">{share.toFixed(1)}% of portfolio</p>
+                      </div>
+                      <div className="sm:w-32 sm:text-right">
+                        {Math.abs(delta) < 1 ? (
+                          <span className="text-xs text-[#7B8998]">No change</span>
+                        ) : (
+                          <span className={`text-xs font-semibold ${delta > 0 ? "text-[#00875A]" : "text-[#C4372C]"}`}>
+                            {delta > 0 ? "Buy " : "Sell "}{formatMillions(Math.abs(delta))}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div className="grid gap-3 bg-[#F7F9FB] px-5 py-4 sm:grid-cols-[1fr_auto_auto] sm:items-center">
+                <div>
+                  <p className="text-sm font-semibold text-[#001E41]">Cash</p>
+                  <p className="mt-0.5 text-xs text-[#647487]">Available for future rounds</p>
+                </div>
+                <div className="sm:text-right">
+                  <p className="font-mono text-sm font-semibold tabular-nums text-[#001E41]">{formatMillions(netCashAfter)}</p>
+                  <p className="text-xs text-[#647487]">{cashShare.toFixed(1)}% of portfolio</p>
+                </div>
+                <div className="sm:w-32" />
+              </div>
+            </div>
+          </section>
+
+          <div className="mt-6 rounded-xl border border-[#D9DFE7] bg-white p-5">
+            <h3 className="text-sm font-semibold text-[#001E41]">What happens after confirmation</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#647487]">
+              Trades are applied at the round’s opening prices, then the simulation reveals the period’s outcome. You cannot revise this round after confirmation.
+            </p>
+          </div>
+        </div>
+
+        <StickyActionBar
+          summary={<><strong className="text-[#001E41]">Final check:</strong> {changedPositions > 0 ? `${changedPositions} position${changedPositions === 1 ? "" : "s"} will change` : "you will hold the current portfolio"}</>}
+          secondary={
+            <Button type="button" variant="outline" onClick={returnToAllocation} className="border-[#B8C7D6] bg-white text-[#001E41]">
+              Edit allocation
+            </Button>
+          }
+          primary={
+            <Button
+              type="button"
+              data-testid="confirm-trades-btn"
+              onClick={handleConfirm}
+              disabled={isSubmitting}
+              className="h-11 w-full bg-[#001E41] px-5 font-semibold text-white hover:bg-[#0074B7] sm:w-auto"
+            >
+              {isSubmitting ? "Submitting decision…" : "Confirm portfolio for this round"}
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-57px)] bg-white">
@@ -674,21 +883,22 @@ export function TradingTable({
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0074B7]">
-                Round {round} · Trading
+                Round {round} · Allocate
               </span>
               <h2 className="font-sans text-xl font-bold text-[#001E41]">
-                Adjust your portfolio
+                Build your proposed portfolio
               </h2>
+              <p className="mt-1 text-xs text-[#647487]">Adjust a slider or enter an amount in $M. Nothing is submitted until the review step.</p>
             </div>
             <div className="flex flex-wrap items-end gap-5">
-              <Metric label="Cash available" value={formatMillions(player.portfolio.cash)} />
+              <Metric label="Available cash now" value={formatMillions(player.portfolio.cash)} />
               <Metric
-                label="Net cash after trades"
+                label="Calculated cash after proposal"
                 value={formatMillions(netCashAfter)}
                 valueClass={cashNegative ? "text-[#C4372C]" : "text-[#00875A]"}
               />
               <Metric
-                label="Total portfolio (current marks)"
+                label="Calculated portfolio total"
                 value={formatMillions(totalPortfolioValue)}
               />
               <button
@@ -698,7 +908,7 @@ export function TradingTable({
                 disabled={!hasPendingChanges}
                 className="inline-flex items-center gap-1 text-sm text-[#0074B7] hover:text-[#001E41] disabled:opacity-40"
               >
-                <RefreshCw className="h-3.5 w-3.5" /> Reset all
+                <RefreshCw className="h-3.5 w-3.5" /> Reset proposed changes
               </button>
             </div>
           </div>
@@ -753,70 +963,64 @@ export function TradingTable({
         </div>
       </div>
 
-      {/* Desktop table */}
-      <div className="hidden lg:block flex-1 overflow-auto">
-        <div className="mx-auto max-w-[1400px] px-4 py-2">
-          <table className="w-full border-collapse table-fixed">
-            <colgroup>
-              <col style={{ width: "15%" }} />
-              <col style={{ width: "13%" }} />
-              <col style={{ width: "14%" }} />
-              <col style={{ width: "8%" }} />
-              <col style={{ width: "11%" }} />
-              <col style={{ width: "19%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "10%" }} />
-            </colgroup>
-            <tbody>
-              {rows.map((row) => (
-                <Row key={row.asset.id} row={row} onChange={handleChange} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="lg:hidden flex-1 overflow-auto">
-        <div className="px-4 py-4 space-y-3">
-          {rows.map((row) => (
-            <MobileCard key={row.asset.id} row={row} onChange={handleChange} />
-          ))}
-        </div>
-      </div>
-
-      {/* Sticky footer */}
-      <div className="sticky bottom-0 z-30 border-t border-[#D9DFE7] bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3">
-          <div className="text-sm text-[#494949]">
-            {hasPendingChanges ? (
-              <>
-                Net cash after trades:{" "}
-                <span
-                  className={`font-mono font-semibold tabular-nums ${cashNegative ? "text-[#C4372C]" : "text-[#00875A]"}`}
-                >
-                  {formatMillions(netCashAfter)}
-                </span>
-              </>
-            ) : (
-              <span className="text-[#9AA8B4]">
-                Move a slider to propose a trade, or confirm to hold.
-              </span>
-            )}
+      {isDesktop ? (
+        <div className="flex-1 overflow-auto">
+          <div className="mx-auto max-w-[1400px] px-4 py-2">
+            <table className="w-full table-fixed border-collapse">
+              <colgroup>
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "14%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "11%" }} />
+                <col style={{ width: "19%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "10%" }} />
+              </colgroup>
+              <tbody>
+                {rows.map((row) => (
+                  <Row key={row.asset.id} row={row} onChange={handleChange} />
+                ))}
+              </tbody>
+            </table>
           </div>
-          <button
-            type="button"
-            data-testid="confirm-trades-btn"
-            onClick={handleConfirm}
-            disabled={isSubmitting || cashNegative || hasOverLimit}
-            className="inline-flex items-center gap-2 rounded-[10px] bg-[#001E41] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#0074B7] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSubmitting
-              ? "Submitting…"
-              : "Confirm trades & proceed to results"}
-          </button>
         </div>
-      </div>
+      ) : (
+        <div className="flex-1 overflow-auto">
+          <div className="space-y-3 px-4 py-4">
+            {rows.map((row) => (
+              <MobileCard key={row.asset.id} row={row} onChange={handleChange} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <StickyActionBar
+        summary={
+          hasPendingChanges ? (
+            <>
+              <strong className="text-[#001E41]">Calculated cash after proposal:</strong>{" "}
+              <span className={`font-mono font-semibold tabular-nums ${cashNegative ? "text-[#C4372C]" : "text-[#00875A]"}`}>
+                {formatMillions(netCashAfter)}
+              </span>
+              <span className="ml-2 text-xs text-[#7B8998]">({cashShare.toFixed(1)}% of portfolio)</span>
+            </>
+          ) : (
+            <span className="text-[#647487]">No changes proposed. You can review a hold decision.</span>
+          )
+        }
+        primary={
+          <Button
+            type="button"
+            data-testid="review-portfolio-btn"
+            onClick={beginReview}
+            disabled={cashNegative || hasOverLimit}
+            className="h-11 w-full bg-[#001E41] px-5 font-semibold text-white hover:bg-[#0074B7] sm:w-auto"
+          >
+            {hasPendingChanges ? "Review proposed portfolio" : "Review hold decision"}
+          </Button>
+        }
+      />
     </div>
   );
 }
@@ -838,6 +1042,16 @@ function Metric({
       <div className={`font-mono text-lg font-bold tabular-nums ${valueClass}`}>
         {value}
       </div>
+    </div>
+  );
+}
+
+function ReviewMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <div className="rounded-xl border border-[#D9DFE7] bg-white p-4">
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#647487]">{label}</dt>
+      <dd className="mt-2 font-mono text-2xl font-bold tabular-nums text-[#001E41]">{value}</dd>
+      <p className="mt-1 text-xs text-[#7B8998]">{detail}</p>
     </div>
   );
 }
