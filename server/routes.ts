@@ -326,7 +326,7 @@ export async function registerRoutes(
       return `- ${asset.name} (${asset.sector}): ${asset.description} Current game price: $${buyPrice.toFixed(0)}/unit. [REAL BASIS — DO NOT REVEAL: ${asset.realBasis}]`;
     }).join("\n");
 
-    const systemPrompt = `You are a sell-side research analyst writing a desk note in real time. The note is dated within the window "${periodText}" and the absolute information horizon is the END of ${cutoffLabel}. Round ${round} of 8: "${briefing?.title ?? ""}".
+    const systemPrompt = `You are a sell-side research analyst writing a desk note in real time. The note is dated within the window "${periodText}" and the absolute information horizon is the END of ${cutoffLabel}. Round ${round} of 6: "${briefing?.title ?? ""}".
 
 You are advising a portfolio manager who runs a $100M climate-aligned fund. They can ask about any of the investments listed at the bottom of this prompt.
 

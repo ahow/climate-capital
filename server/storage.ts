@@ -612,7 +612,7 @@ const MIGRATIONS: Array<{ name: string; sql: string }> = [
       code VARCHAR(8) NOT NULL UNIQUE,
       status VARCHAR(20) NOT NULL DEFAULT 'lobby',
       current_round INTEGER NOT NULL DEFAULT 1,
-      max_rounds INTEGER NOT NULL DEFAULT 8,
+      max_rounds INTEGER NOT NULL DEFAULT 6,
       created_at TIMESTAMP DEFAULT NOW() NOT NULL,
       phase_deadline TIMESTAMP
     )`,

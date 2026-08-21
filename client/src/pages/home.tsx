@@ -115,7 +115,7 @@ export default function Home() {
               transition={{ duration: 0.45 }}
             >
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#A8D0E6]">
-                Climate investing simulation · 2015–2025
+                Climate investing simulation · late 2015 – mid-2026
               </p>
               <h1 className="mt-4 max-w-3xl text-4xl font-bold leading-[1.05] tracking-[-0.03em] sm:text-5xl lg:text-[3.6rem]">
                 Navigate a decade of climate investing
@@ -131,11 +131,11 @@ export default function Home() {
                 </div>
                 <div className="px-4">
                   <dt className="text-[10px] uppercase tracking-[0.16em] text-white/55">Decision rounds</dt>
-                  <dd className="mt-1 font-mono text-xl font-semibold text-white sm:text-2xl">8</dd>
+                  <dd className="mt-1 font-mono text-xl font-semibold text-white sm:text-2xl">6</dd>
                 </div>
                 <div className="px-4">
                   <dt className="text-[10px] uppercase tracking-[0.16em] text-white/55">Historical period</dt>
-                  <dd className="mt-1 font-mono text-base font-semibold text-white sm:text-xl">2015–25</dd>
+                  <dd className="mt-1 font-mono text-base font-semibold text-white sm:text-xl">2015–26</dd>
                 </div>
               </dl>
             </motion.div>

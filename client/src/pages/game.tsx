@@ -1202,7 +1202,7 @@ function FinishedPhase({
     : getPortfolioValue(player, assets, player.currentRound);
 
   const startingValue = 100_000_000;
-  const years = 10; // 2015-2025
+  const years = 10.75; // late 2015 to mid-2026
   const portfolioCAGR = Math.pow(finalValue / startingValue, 1 / years) - 1;
   const finalBenchmark = benchmark?.[benchmark.length - 1] ?? startingValue;
   const benchmarkCAGR = Math.pow(finalBenchmark / startingValue, 1 / years) - 1;
