@@ -121,7 +121,7 @@ export default function Home() {
                 Navigate a decade of climate investing
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/78 sm:text-lg">
-                Manage <strong className="font-semibold text-white">$100 million</strong> through eight rounds of real-world climate events. Research the market, build a portfolio, and see how each decision changes your result.
+                Manage <strong className="font-semibold text-white">$100 million</strong> through six rounds of real-world climate events. Research the market, build a portfolio, and see how each decision changes your result.
               </p>
 
               <dl className="mt-8 grid max-w-2xl grid-cols-3 divide-x divide-white/15 rounded-xl border border-white/15 bg-white/[0.06] py-4 backdrop-blur">

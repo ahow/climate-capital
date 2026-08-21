@@ -25,7 +25,7 @@ const SECTIONS: Section[] = [
   {
     icon: Trophy,
     title: "How You're Judged",
-    body: "Your portfolio's total value (cash + holdings, marked to round-end prices) is your score. Compete against other players on the Hall of Fame leaderboard across all eight rounds.",
+    body: "Your portfolio's total value (cash + holdings, marked to round-end prices) is your score. Compete against other players on the Hall of Fame leaderboard across all six rounds.",
   },
 ];
 

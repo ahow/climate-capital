@@ -58,7 +58,7 @@ function tickerFor(asset: UniverseAsset): string {
   return letters.slice(0, 4) || asset.name.replace(/[^A-Za-z]/g, "").slice(0, 4).toUpperCase();
 }
 
-// The price series shown on charts: round 0 (start) through round 7.
+// The price series shown on charts: round 0 (start) through round 6.
 function priceSeries(asset: UniverseAsset): number[] {
   return [asset.startPrice, ...asset.roundPrices];
 }

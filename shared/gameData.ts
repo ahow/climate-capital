@@ -7,8 +7,7 @@ import type { GameAsset, RoundBriefing, RoundTakeaway } from "./schema";
  * Players allocate in $M increments. Buying $10M of an asset at $100/unit = 100,000 units.
  * Round prices reflect actual market performance, scaled to this normalised base.
  *
- * Sources: Historical equity/ETF data (Yahoo Finance, Perplexity Finance),
- * infrastructure IRR benchmarks (Brookfield, NREL), carbon market indices
+ * Sources: Historical equity/ETF data, infrastructure IRR benchmarks, and carbon market indices
  * (EU ETS via Trading Economics, VCM via Fastmarkets/CDR.fyi).
  */
 
@@ -29,9 +28,9 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A US electric vehicle maker that is also expanding into energy storage and solar. Highly volatile, driven by CEO profile and market sentiment as much as fundamentals.",
     riskLevel: "very-high",
     startPrice: 100,
-    // Rounds: 1(2015-17), 2(2017-18), 3(2018-19), 4(2020), 5(2021), 6(2022), 7(2023-24), 8(2024-25)
+    // Round endpoints: R1(2019), R2(2020), R3(2021), R4(2022), R5(2024), R6(mid-2026)
     // TSLA: $14→$14.25→$20.47→$235→$381→$123→$248→$350 (approx, split-adj)
-    roundPrices: [90, 139, 174, 1470, 2202, 770, 2524],
+    roundPrices: [174, 1470, 2202, 770, 2524, 2000],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mega", marketCapBn: 780, peRatioProxy: 65, dividendYieldPct: 0 },
@@ -44,9 +43,9 @@ export const GAME_ASSETS: GameAsset[] = [
       "Intensifying EV price competition compresses margins",
     ],
     historicalNotes: [
-      { round: 4, event: "Joins the broad market index; record rebalancing trade" },
-      { round: 5, event: "Parabolic clean-energy rally lifts the stock to a peak" },
-      { round: 6, event: "Rate hikes and risk-off rotation trigger a sharp drawdown" },
+      { round: 2, event: "Joins the broad market index; record rebalancing trade" },
+      { round: 3, event: "Parabolic clean-energy rally lifts the stock to a peak" },
+      { round: 4, event: "Rate hikes and risk-off rotation trigger a sharp drawdown" },
     ],
   },
   {
@@ -59,7 +58,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // ENPH: ~$5→$6→$25→$175→$307→$135→$120→$65
-    roundPrices: [42, 135, 744, 4999, 5212, 7549, 3765],
+    roundPrices: [744, 4999, 5212, 7549, 3765, 3200],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mid", marketCapBn: 18, peRatioProxy: 40, dividendYieldPct: 0 },
@@ -72,8 +71,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Extreme share-price volatility through the rate cycle",
     ],
     historicalNotes: [
-      { round: 4, event: "Residential solar boom drives a parabolic re-rating" },
-      { round: 7, event: "Higher rates and policy changes sharply cut demand" },
+      { round: 2, event: "Residential solar boom drives a parabolic re-rating" },
+      { round: 5, event: "Higher rates and policy changes sharply cut demand" },
     ],
   },
   {
@@ -86,7 +85,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // Orsted (DKK): IPO ~134→280→600→800→1000→400→180→122
-    roundPrices: [100, 123, 194, 314, 186, 129, 86],
+    roundPrices: [194, 314, 186, 129, 86, 55],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Large", marketCapBn: 45, peRatioProxy: 22, dividendYieldPct: 2.5 },
@@ -99,9 +98,9 @@ export const GAME_ASSETS: GameAsset[] = [
       "Auction-price and political risk in key markets",
     ],
     historicalNotes: [
-      { round: 4, event: "Offshore-wind optimism pushes the stock to its peak" },
-      { round: 5, event: "Auction-price pressure begins a steep de-rating" },
-      { round: 7, event: "Multi-billion writedown; project cancellations" },
+      { round: 2, event: "Offshore-wind optimism pushes the stock to its peak" },
+      { round: 3, event: "Auction-price pressure begins a steep de-rating" },
+      { round: 5, event: "Multi-billion writedown; project cancellations" },
     ],
   },
   {
@@ -114,7 +113,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // PLUG: $2.67→$2.50→$3→$33→$65→$13→$5→$2
-    roundPrices: [50, 59, 150, 1607, 1338, 586, 213],
+    roundPrices: [150, 1607, 1338, 586, 213, 140],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mid", marketCapBn: 6, peRatioProxy: 0, dividendYieldPct: 0 },
@@ -127,8 +126,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Periodic speculative spikes detached from fundamentals",
     ],
     historicalNotes: [
-      { round: 4, event: "Green-hydrogen hype drives an enormous speculative spike" },
-      { round: 6, event: "Funding squeeze and rate hikes deflate the rally" },
+      { round: 2, event: "Green-hydrogen hype drives an enormous speculative spike" },
+      { round: 4, event: "Funding squeeze and rate hikes deflate the rally" },
     ],
   },
   {
@@ -141,7 +140,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // NEE (split-adj): ~$24→$36→$48→$72→$88→$76→$68→$76
-    roundPrices: [109, 166, 235, 270, 336, 318, 231],
+    roundPrices: [235, 270, 336, 318, 231, 285],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mega", marketCapBn: 150, peRatioProxy: 24, dividendYieldPct: 2.4 },
@@ -154,8 +153,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Regulatory and weather exposure in its home market",
     ],
     historicalNotes: [
-      { round: 5, event: "Renewables leadership lifts the stock to a high" },
-      { round: 7, event: "Rate-driven de-rating pulls it back" },
+      { round: 3, event: "Renewables leadership lifts the stock to a high" },
+      { round: 5, event: "Rate-driven de-rating pulls it back" },
     ],
   },
 
@@ -170,7 +169,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // XOM: ~$80→$82→$68→$42→$61→$110→$100→$110 (+ dividends)
-    roundPrices: [111, 89, 85, 41, 70, 135, 126],
+    roundPrices: [85, 41, 70, 135, 126, 135],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mega", marketCapBn: 450, peRatioProxy: 12, dividendYieldPct: 3.5 },
@@ -183,8 +182,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Earnings highly cyclical with the oil price",
     ],
     historicalNotes: [
-      { round: 4, event: "Oil prices collapse during the pandemic shock" },
-      { round: 6, event: "Energy crisis drives record profits; best performer" },
+      { round: 2, event: "Oil prices collapse during the pandemic shock" },
+      { round: 4, event: "Energy crisis drives record profits; best performer" },
     ],
   },
   {
@@ -197,7 +196,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // BTU: ~$15 (2015, already in freefall)→$0 (bankruptcy 2016)→emerged→spike→fade
-    roundPrices: [0, 0, 92, 24, 101, 265, 247],
+    roundPrices: [92, 24, 101, 265, 247, 220],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Small", marketCapBn: 2, peRatioProxy: 6, dividendYieldPct: 0 },
@@ -211,7 +210,7 @@ export const GAME_ASSETS: GameAsset[] = [
     ],
     historicalNotes: [
       { round: 1, event: "Files for bankruptcy; holders wiped out" },
-      { round: 6, event: "Energy crisis revives coal demand and the share price" },
+      { round: 4, event: "Energy crisis revives coal demand and the share price" },
     ],
   },
   {
@@ -224,7 +223,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // VW: ~€170→€140→€145→€140→€200→€120→€110→€95
-    roundPrices: [105, 104, 122, 120, 182, 104, 82],
+    roundPrices: [122, 120, 182, 104, 82, 78],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Large", marketCapBn: 70, peRatioProxy: 5, dividendYieldPct: 5.5 },
@@ -237,8 +236,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Intense competition from dedicated EV makers",
     ],
     historicalNotes: [
-      { round: 5, event: "EV-pivot optimism lifts the shares" },
-      { round: 7, event: "EV price war and execution doubts pressure the stock" },
+      { round: 3, event: "EV-pivot optimism lifts the shares" },
+      { round: 5, event: "EV price war and execution doubts pressure the stock" },
     ],
   },
 
@@ -253,7 +252,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // ICLN: ~$11→$11→$12→$28→$33→$18→$14→$15
-    roundPrices: [80, 84, 119, 287, 215, 202, 158],
+    roundPrices: [119, 287, 215, 202, 158, 175],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 1.2 },
@@ -266,8 +265,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Less diversification than the headline 'broad' label implies",
     ],
     historicalNotes: [
-      { round: 4, event: "Clean-energy index returns +142% in a single year" },
-      { round: 7, event: "Multi-year drawdown unwinds most of the rally" },
+      { round: 2, event: "Clean-energy index returns +142% in a single year" },
+      { round: 5, event: "Multi-year drawdown unwinds most of the rally" },
     ],
   },
   {
@@ -280,7 +279,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // S&P 500 ESG roughly tracks S&P 500 with slight outperformance
-    roundPrices: [132, 143, 186, 237, 312, 257, 320],
+    roundPrices: [186, 237, 312, 257, 320, 385],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 1.3 },
@@ -293,7 +292,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Broad-market drawdowns affect it like any large-cap fund",
     ],
     historicalNotes: [
-      { round: 5, event: "Tech-led rally lifts the index to new highs" },
+      { round: 3, event: "Tech-led rally lifts the index to new highs" },
     ],
   },
   {
@@ -306,7 +305,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // S&P 500: ~2050→2700→2900→3750→4770→3840→4770→5600
-    roundPrices: [131, 123, 158, 184, 233, 188, 288],
+    roundPrices: [158, 184, 233, 188, 288, 355],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 1.4 },
@@ -319,7 +318,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Exposed to broad-market drawdowns",
     ],
     historicalNotes: [
-      { round: 4, event: "Pandemic crash then a rapid stimulus-fuelled recovery" },
+      { round: 2, event: "Pandemic crash then a rapid stimulus-fuelled recovery" },
     ],
   },
 
@@ -334,7 +333,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "low",
     startPrice: 100,
     // Green bonds: modest returns, hit in 2022 by rates
-    roundPrices: [103, 107, 114, 128, 118, 92, 101],
+    roundPrices: [114, 128, 118, 92, 101, 108],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 3.0 },
@@ -347,7 +346,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Use-of-proceeds reporting varies by issuer",
     ],
     historicalNotes: [
-      { round: 6, event: "Sharp rate rises hit bond prices across the board" },
+      { round: 4, event: "Sharp rate rises hit bond prices across the board" },
     ],
   },
   {
@@ -359,7 +358,7 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A sustainability-linked bond where the coupon steps up if the issuer misses emissions targets. A pioneer instrument testing whether financial incentives can drive corporate decarbonisation.",
     riskLevel: "low",
     startPrice: 100,
-    roundPrices: [102, 104, 108, 115, 108, 88, 96],
+    roundPrices: [108, 115, 108, 88, 96, 102],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 3.2 },
@@ -372,7 +371,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Limited liquidity in a young instrument class",
     ],
     historicalNotes: [
-      { round: 6, event: "Rate shock pressures the note's price" },
+      { round: 4, event: "Rate shock pressures the note's price" },
     ],
   },
 
@@ -387,7 +386,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // Good early vintages, then cost/rate squeeze
-    roundPrices: [108, 118, 130, 145, 155, 130, 105],
+    roundPrices: [130, 145, 155, 130, 105, 95],
     lockRounds: 2,
     minAllocation: 5_000_000,
     valuation: { tier: "Large", peRatioProxy: 0, dividendYieldPct: 5.0 },
@@ -400,8 +399,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Returns squeezed by higher rates and auction pricing",
     ],
     historicalNotes: [
-      { round: 5, event: "Strong vintages lift fund value to a peak" },
-      { round: 7, event: "Cost and rate squeeze erodes returns" },
+      { round: 3, event: "Strong vintages lift fund value to a peak" },
+      { round: 5, event: "Cost and rate squeeze erodes returns" },
     ],
   },
   {
@@ -414,7 +413,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "medium",
     startPrice: 100,
     // Solar IRR compression over time
-    roundPrices: [112, 126, 142, 160, 172, 158, 150],
+    roundPrices: [142, 160, 172, 158, 150, 148],
     lockRounds: 2,
     minAllocation: 5_000_000,
     valuation: { tier: "Large", peRatioProxy: 0, dividendYieldPct: 4.5 },
@@ -427,8 +426,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Returns sensitive to financing costs",
     ],
     historicalNotes: [
-      { round: 5, event: "Falling panel costs lift returns to a high" },
-      { round: 6, event: "Capture-rate compression begins to bite" },
+      { round: 3, event: "Falling panel costs lift returns to a high" },
+      { round: 4, event: "Capture-rate compression begins to bite" },
     ],
   },
   {
@@ -440,7 +439,7 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A diversified global renewable infrastructure fund targeting 12-15% returns. The most consistent performer in the asset class, now boosted by AI data centre power demand. LOCKED for 2 rounds after purchase.",
     riskLevel: "medium",
     startPrice: 100,
-    roundPrices: [123, 121, 234, 422, 361, 265, 266],
+    roundPrices: [234, 422, 361, 265, 266, 310],
     lockRounds: 2,
     minAllocation: 5_000_000,
     valuation: { tier: "Large", peRatioProxy: 0, dividendYieldPct: 4.0 },
@@ -453,8 +452,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Execution risk across a large global pipeline",
     ],
     historicalNotes: [
-      { round: 4, event: "Platform scales rapidly; strong re-rating" },
-      { round: 7, event: "Record results on AI data-centre power contracts" },
+      { round: 2, event: "Platform scales rapidly; strong re-rating" },
+      { round: 5, event: "Record results on AI data-centre power contracts" },
     ],
   },
 
@@ -469,7 +468,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // EU ETS: €5→€7→€22→€33→€50→€85→€65→€70
-    roundPrices: [73, 291, 364, 408, 655, 1166, 933],
+    roundPrices: [364, 408, 655, 1166, 933, 1050],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Commodity" },
@@ -482,7 +481,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Political risk of intervention during energy crises",
     ],
     historicalNotes: [
-      { round: 6, event: "Hits an all-time high during the energy crisis" },
+      { round: 4, event: "Hits an all-time high during the energy crisis" },
     ],
   },
   {
@@ -491,11 +490,11 @@ export const GAME_ASSETS: GameAsset[] = [
     realBasis: "Gold Standard / high-quality VCM credits",
     assetClass: "carbon",
     sector: "Voluntary Carbon (Quality)",
-    description: "A portfolio of high-quality voluntary carbon credits from Gold Standard certified projects. More expensive than generic credits, but proven additionality and resistant to integrity scandals.",
+    description: "A portfolio of high-quality voluntary carbon credits from independently certified projects. More expensive than generic credits, but proven additionality and resistant to integrity scandals.",
     riskLevel: "medium",
     startPrice: 100,
     // Quality VCM: $4→$5→$7→$12→$15→$14→$16→$17
-    roundPrices: [100, 100, 114, 136, 164, 218, 182],
+    roundPrices: [114, 136, 164, 218, 182, 195],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Commodity" },
@@ -508,7 +507,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Thin, opaque secondary-market liquidity",
     ],
     historicalNotes: [
-      { round: 6, event: "Premium credits hold value as generics collapse" },
+      { round: 4, event: "Premium credits hold value as generics collapse" },
     ],
   },
   {
@@ -521,7 +520,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // Standard VCM: $3→$4→$5→$9→$12→$10→$4→$4
-    roundPrices: [97, 92, 120, 92, 158, 315, 185],
+    roundPrices: [120, 92, 158, 315, 185, 155],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Commodity" },
@@ -534,7 +533,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Demand evaporates when buyers flee reputational risk",
     ],
     historicalNotes: [
-      { round: 7, event: "Integrity investigation triggers a sharp sell-off" },
+      { round: 5, event: "Integrity investigation triggers a sharp sell-off" },
     ],
   },
   {
@@ -547,7 +546,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "high",
     startPrice: 100,
     // Not available until round 3; early vintages ok, then scandal hit
-    roundPrices: [100, 100, 102, 105, 108, 103, 100],
+    roundPrices: [102, 105, 108, 103, 100, 102],
     lockRounds: 3,
     minAllocation: 5_000_000,
     valuation: { tier: "Large", peRatioProxy: 0, dividendYieldPct: 1.0 },
@@ -560,8 +559,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Exposed to carbon-credit integrity sentiment",
     ],
     historicalNotes: [
-      { round: 5, event: "Early vintages perform steadily" },
-      { round: 7, event: "Nature-credit scrutiny caps the upside" },
+      { round: 3, event: "Early vintages perform steadily" },
+      { round: 5, event: "Nature-credit scrutiny caps the upside" },
     ],
   },
 
@@ -575,8 +574,8 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A plant-based meat company that went public to enormous fanfare. The IPO tripled on day one. Consumer demand for alt-protein is the key question.",
     riskLevel: "very-high",
     startPrice: 100,
-    // BYND: not public until 2019. IPO $65→$240→$140→$25→$5→$1
-    roundPrices: [100, 100, 100, 165, 86, 16, 12],
+    // Alt-protein: public listing in 2019, then a sustained decline
+    roundPrices: [100, 165, 86, 16, 12, 8],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Small", marketCapBn: 1, peRatioProxy: 0, dividendYieldPct: 0 },
@@ -589,8 +588,8 @@ export const GAME_ASSETS: GameAsset[] = [
       "Crowded, increasingly competitive category",
     ],
     historicalNotes: [
-      { round: 4, event: "Post-IPO euphoria drives an early peak" },
-      { round: 6, event: "Demand disappoints; shares collapse" },
+      { round: 2, event: "Post-IPO euphoria drives an early peak" },
+      { round: 4, event: "Demand disappoints; shares collapse" },
     ],
   },
   {
@@ -603,7 +602,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // PCG: ~$56→$66→$48→$9→$12→$12→$17→$18
-    roundPrices: [107, 44, 20, 22, 22, 26, 30],
+    roundPrices: [20, 22, 22, 26, 30, 34],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mid", marketCapBn: 10, peRatioProxy: 9, dividendYieldPct: 0 },
@@ -616,7 +615,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Regulatory and litigation overhang",
     ],
     historicalNotes: [
-      { round: 2, event: "Wildfire liabilities force a bankruptcy filing" },
+      { round: 1, event: "Wildfire liabilities force a bankruptcy filing" },
     ],
   },
   {
@@ -629,7 +628,7 @@ export const GAME_ASSETS: GameAsset[] = [
     riskLevel: "very-high",
     startPrice: 100,
     // Speculative - not tradeable until round 4, high risk
-    roundPrices: [100, 100, 100, 95, 92, 100, 115],
+    roundPrices: [100, 95, 92, 100, 115, 105],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Small", marketCapBn: 1, peRatioProxy: 0, dividendYieldPct: 0 },
@@ -642,7 +641,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Dependent on continued grant and policy support",
     ],
     historicalNotes: [
-      { round: 7, event: "Cost-curve optimism lifts valuations modestly" },
+      { round: 5, event: "Cost-curve optimism lifts valuations modestly" },
     ],
   },
 ];
@@ -660,218 +659,171 @@ export type RoundBriefingWithNews = RoundBriefing & {
 export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
   {
     round: 1,
-    title: "The Paris Moment",
-    period: "Late 2015 – Early 2017",
+    title: "The Paris Signal",
+    period: "Late 2015 – 2019",
     contextBullets: [
       "December 2015: 196 nations sign the Paris Agreement, committing to limit warming to well below 2°C.",
-      "Coal stocks crash on the news — major coal producers fall 11–13% on the first trading day after the agreement.",
-      "Major investment banks estimate the low-carbon economy is worth $600B+ and growing fast.",
-      "But coal still generates 40% of global electricity. Oil demand is at record highs.",
-      "Renewable energy costs are falling fast but solar and wind are still less than 5% of global electricity generation.",
-      "EU carbon allowances are trading at just €5–8/tonne — cheap but potentially a sleeping giant.",
+      "A major coal producer files for bankruptcy while coal still supplies roughly 40% of global electricity.",
+      "The US elects a pro-fossil-fuel president and announces withdrawal from Paris, hitting renewable sentiment.",
+      "While Washington pivots, the EU launches its Sustainable Finance Action Plan and corporate climate disclosure framework.",
+      "China launches a national emissions trading scheme, creating the world's largest carbon market.",
+      "Climate strikes mobilise millions in 2019 as sustainable-fund inflows reach a record $20.6 billion.",
+      "The EU Green Deal commits Europe to climate neutrality by 2050 and starts building the policy machinery behind capital flows.",
+      "Renewables become the lowest-cost new power source in many markets, while a California utility bankruptcy makes physical climate risk tangible.",
+      "EU carbon allowances remain inexpensive early in the period, but tightening rules make them a potential sleeping giant.",
     ],
-    keyQuestion: "How aggressively should you bet on the Paris signal vs. the ongoing reality of fossil fuel dominance?",
+    keyQuestion: "The world signed Paris and the US pulled out. Are you following the political theatre, or the policy machinery being built underneath?",
     videoScript:
-      "Good evening, and welcome to Climate Capital. The story this period is Paris. One hundred and ninety-six nations have signed an agreement to limit warming to well below two degrees. Markets are digesting the news: Appalachian Coal has filed for bankruptcy, while clean energy investment has hit a record three hundred and forty-nine billion dollars. Yet coal still generates forty percent of the world's electricity, and EU carbon allowances are trading near historic lows. The signal is here. The question for your fund: how aggressively do you act before the price catches up?",
+      "The Paris signal arrives, then meets political reality. One hundred and ninety-six nations commit to limit warming, yet coal still supplies forty percent of global electricity and a major coal producer enters bankruptcy. A US withdrawal from Paris jolts renewable sentiment, but Brussels accelerates: sustainable-finance rules, climate disclosure, and the Green Deal begin to turn policy into investable markets. At the same time, climate strikes and record sustainable-fund inflows bring public pressure into the financial system. Renewables become the cheapest new power in many markets, while a utility bankruptcy reveals the cost of physical climate risk. The question is not whether politics makes noise. It is whether you can see the machinery being built underneath.",
     newsHeadlines: [
       "BREAKING: 196 nations sign Paris Climate Agreement — markets digest deal",
-      "Coal stocks tumble: Peabody Energy files for Chapter 11 bankruptcy",
-      "OPEC refuses production cut — WTI crude plunges below $30/barrel",
-      "Clean energy investment hits record $349 billion in 2015 — BNEF",
-      "China pledges to peak CO2 emissions by 2030; Beijing shuts coal plants",
-      "Tesla unveils Model 3: 325,000 pre-orders logged in first week",
-      "Brexit vote roils European utilities; pound falls 10% against dollar",
-      "EU ETS carbon allowances trade below €5/tonne — lowest level since 2013",
+      "Major coal producer files for Chapter 11; shareholders wiped out",
+      "Clean-energy investment reaches a record $349 billion",
+      "US announces Paris withdrawal; renewable shares sell off",
+      "EU launches Sustainable Finance Action Plan — capital-allocation rules begin to change",
+      "Corporate climate-disclosure framework wins support from major global companies",
+      "China launches national emissions trading scheme — world's largest carbon market",
+      "California utility files for bankruptcy after wildfire liabilities exceed $30 billion",
+      "Global climate strike draws more than four million people",
+      "EU Green Deal unveiled: climate neutrality by 2050",
+      "Sustainable-fund inflows hit a record $20.6 billion in 2019",
     ],
   },
   {
     round: 2,
-    title: "The Trump Shock",
-    period: "2017 – Mid-2018",
+    title: "Pandemic and Green Euphoria",
+    period: "2020",
     contextBullets: [
-      "November 2016: Donald Trump is elected US President on a pro-fossil-fuel platform.",
-      "June 2017: The US formally announces withdrawal from the Paris Agreement.",
-      "Non-US renewable stocks lost 14% in the 20 days following the Trump election.",
-      "Pipeline stocks surged — Energy Transfer rose 19% in election week alone.",
-      "But the rest of the world doubled down: the EU launched its Sustainable Finance Action Plan.",
-      "The TCFD recommendations are published, endorsed by 100+ CEOs with $3.3 trillion in market cap.",
-      "ESG fund inflows continued growing despite US political headwinds.",
+      "March 2020: COVID-19 crashes global markets. The Broad Market Index falls 34% in five weeks.",
+      "April 2020: oil prices go negative for the first time in history as storage fills.",
+      "The EU approves a €750 billion recovery programme with a 37% climate spending floor.",
+      "ESG funds outperform conventional funds during the crash, attracting enormous attention.",
+      "Global Clean Energy Index returns +142% for the year as clean-energy valuations turn parabolic.",
+      "A leading EV maker joins the Broad Market Index, triggering $154 billion of rebalancing trades.",
+      "Green-bond issuance tops $270 billion globally, setting a new record.",
     ],
-    keyQuestion: "Was Paris a false start, or is the US an outlier? Should you follow the politics or the policy machinery?",
+    keyQuestion: "Are clean energy valuations justified by the green recovery, or is this a bubble forming?",
     videoScript:
-      "Welcome back. The political backdrop has shifted abruptly. The United States has announced its withdrawal from the Paris Agreement, and non-US renewable equities sold off fourteen percent in the twenty days after the election. Pipeline operators rallied nineteen percent in a single week. But while Washington pivots, Brussels accelerates. The EU has launched a sustainable finance action plan, and over one hundred chief executives representing trillions in market cap have endorsed the TCFD disclosures. ESG fund inflows continue to grow. Your call: follow the politics, or follow the policy machinery being built behind the scenes.",
+      "An extraordinary year. The pandemic wipes thirty-four percent off broad equity markets in twenty-three trading days, and oil briefly trades below zero. Governments respond with green recovery packages: the EU alone earmarks more than a third of seven hundred and fifty billion euros for climate. The Global Clean Energy Index returns one hundred and forty-two percent. A leading EV maker joins the broad market index in one of the largest rebalancing events on record. Valuations are stretched. Decide whether the green recovery justifies the price, or whether you are watching a bubble form.",
     newsHeadlines: [
-      "BREAKING: Trump announces US withdrawal from Paris Agreement",
-      "Non-US renewable stocks drop 14% in 20 days post-election",
-      "Energy Transfer Partners surges 19% in election week on pipeline hopes",
-      "EU unveils Sustainable Finance Action Plan — trillions to be redirected",
-      "TCFD releases final recommendations — backed by 100+ CEOs, $3.3tn market cap",
-      "ESG fund inflows hit $5.5bn in 2017, defying political headwinds",
-      "China launches national emissions trading scheme — world's largest carbon market",
-      "Ørsted completes world's largest offshore wind project at Walney Extension",
+      "BREAKING: WTI crude futures crash to -$37.63/barrel — negative for first time",
+      "Broad Market Index plunges 34% in 23 trading days as COVID-19 shuts the global economy",
+      "EU approves €750bn recovery programme — 37% earmarked for climate",
+      "Leading EV maker joins Broad Market Index — $154bn rebalancing trade",
+      "Global Clean Energy Index returns +142% in 2020",
+      "Solar-equipment shares surge as residential demand and low rates ignite a rally",
+      "US election winner pledges to rejoin Paris Agreement on day one",
+      "Green-bond issuance tops $270bn globally — shattering the previous record",
     ],
   },
   {
     round: 3,
-    title: "The Green Wave Builds",
-    period: "Mid-2018 – Late 2019",
+    title: "Peak Euphoria and Net Zero Pledges",
+    period: "2021",
     contextBullets: [
-      "Greta Thunberg's school strikes go global. 4 million+ people march in September 2019.",
-      "ESG fund inflows hit $20.6 billion in 2019 — nearly 4x the previous year's record.",
-      "The EU Green Deal is announced (December 2019): Europe commits to becoming the first climate-neutral continent by 2050.",
-      "Renewable energy costs cross below fossil fuels in most markets for the first time.",
-      "Australian bushfires (2019–20) and extreme weather events make climate risk tangible for asset owners.",
-      "A major California utility files for bankruptcy (January 2019) after wildfire liabilities exceed $30 billion.",
+      "A new US administration recommits to Paris and signals major climate legislation.",
+      "COP26 produces net-zero pledges from 140+ countries, covering roughly 90% of global GDP.",
+      "Clean-energy valuations reach extreme levels as special-purpose listings flood the climate sector.",
+      "The voluntary carbon market booms, with credit prices reaching $10–15 per tonne.",
+      "Inflation rises sharply and central banks signal rate increases; bond yields begin moving higher.",
+      "EU carbon allowances pass €50 per tonne as the bloc tightens its emissions-trading system.",
+      "Offshore-wind economics begin to deteriorate as auction prices and supply-chain costs turn.",
     ],
-    keyQuestion: "Is this the beginning of a structural shift in markets, or a sentiment-driven rally?",
+    keyQuestion: "Everything climate looks like it only goes up. Take profits on the extraordinary rally, or ride the momentum?",
     videoScript:
-      "The green wave is building. Sustainable fund inflows have hit a record twenty point six billion dollars — nearly four times last year's figure. The EU Green Deal commits Europe to climate neutrality by twenty fifty. Renewables are now the cheapest source of electricity in most markets. But the period has also delivered a stark reminder of physical climate risk: WildFire Utility has filed for bankruptcy after thirty billion dollars in wildfire liabilities. PlantProtein Co debuted with one of the biggest IPO pops in two decades. Structural shift, or sentiment? Your portfolio decides.",
+      "Peak euphoria. COP26 has delivered net-zero pledges covering ninety percent of global GDP. EU carbon allowances pass fifty euros, ESG assets grow rapidly, speculative listings reshape the EV landscape, and the voluntary carbon market booms. But the cracks are visible: inflation is at a multi-decade high, central banks are preparing to raise rates, and offshore wind has begun to de-rate. Everything climate looks as if it only goes up. Your decision: take profits, or ride the momentum.",
     newsHeadlines: [
-      "BREAKING: PG&E files for bankruptcy — $30bn wildfire liabilities crush stock",
-      "Beyond Meat IPO soars 163% on debut — biggest pop since 2000",
-      "Greta Thunberg leads 4 million-strong global climate strike",
-      "EU Green Deal unveiled: €1 trillion, net-zero by 2050 target",
-      "US sustainable fund inflows hit record $20.6bn in 2019 — Morningstar",
-      "BlackRock's Larry Fink: 'climate change is investment risk' in annual letter",
-      "Solar becomes cheapest source of electricity in history — IEA",
-      "Australian bushfires devastate wildlife; climate attribution studies trigger investor alarm",
+      "BREAKING: COP26 produces net-zero pledges covering 90% of global GDP",
+      "Electric-vehicle listings and special-purpose deals push climate valuations to extremes",
+      "EU ETS carbon price tops €50/tonne for the first time",
+      "ESG assets under management reach $35 trillion globally",
+      "US inflation prints 6.8%; central bank signals rate hikes",
+      "Voluntary carbon-market volumes quadruple; generic credits reach $15/tonne",
+      "Offshore-wind developers fall from their peaks as auction economics weaken",
     ],
   },
   {
     round: 4,
-    title: "Pandemic, Crash, and Green Euphoria",
-    period: "2020",
+    title: "The Energy Crisis",
+    period: "2022",
     contextBullets: [
-      "March 2020: COVID-19 crashes global markets. The S&P 500 falls 34% in five weeks.",
-      "April 2020: Oil prices go NEGATIVE for the first time in history (WTI: -$37.63/barrel).",
-      "Governments announce massive green recovery packages. The EU's €750B NextGenerationEU fund has a 37% climate spending floor.",
-      "ESG funds outperform conventional funds during the crash, attracting huge attention.",
-      "Clean energy enters a parabolic rally: the Global Clean Energy Index returns +142% for the year.",
-      "December 2020: a major EV manufacturer joins the S&P 500, triggering $154B in rebalancing trades.",
-      "A major plant-based meat company is now publicly traded and riding the alt-protein wave.",
+      "February 2022: Russia invades Ukraine, shattering European energy security overnight.",
+      "European natural-gas prices spike tenfold and oil rises above $120 per barrel.",
+      "Fossil-fuel companies post record profits while fossil-fuel equities return +64% and the Broad Market Index falls -18%.",
+      "Clean-energy shares struggle with rising rates, disrupted supply chains, and renewed political support for fossil fuels.",
+      "The EU responds with REPowerEU, accelerating renewables despite severe short-term pain.",
+      "The United States enacts $369 billion of clean-energy support through landmark climate legislation.",
+      "EU carbon allowances reach an all-time high near €105 per tonne.",
     ],
-    keyQuestion: "Are clean energy valuations justified by the green recovery, or is this a bubble forming?",
+    keyQuestion: "Is this the bottom for clean energy, or the beginning of a new fossil fuel era? And what about the IRA?",
     videoScript:
-      "An extraordinary period. The pandemic wiped thirty-four percent off broad equity markets in twenty-three trading days, and oil prices went negative for the first time in history. Governments responded with green recovery packages: the EU's NextGenerationEU fund alone earmarks more than a third of seven hundred and fifty billion euros for climate. The Global Clean Energy Index has returned one hundred and forty-two percent for the year. ElectraDrive has joined the broad market index, triggering one of the largest rebalancing trades on record. Valuations are stretched. The question is whether the green recovery justifies the price — or whether you are watching a bubble form.",
+      "The energy crisis has rewritten the script. Russia's invasion sends European gas prices up tenfold and pushes oil above one hundred and twenty dollars a barrel. Titan Petroleum posts record profits as fossil-fuel equities rise while broad markets fall. Clean energy collapses under higher rates and supply-chain strain. Yet the policy response points the other way: Europe accelerates renewables and the United States commits three hundred and sixty-nine billion dollars to clean energy. Is this the bottom for climate assets, or the dawn of a new fossil era?",
     newsHeadlines: [
-      "BREAKING: WTI crude futures crash to -$37.63/barrel — negative for first time",
-      "S&P 500 plunges 34% in 23 trading days as COVID-19 shuts global economy",
-      "EU approves €750bn NextGenerationEU — 37% earmarked for climate",
-      "Tesla joins S&P 500 — $154bn rebalancing trade",
-      "iShares Global Clean Energy ETF (ICLN) returns +142% in 2020",
-      "Enphase Energy up 572% YTD; solar stocks hit record highs",
-      "Biden wins election; vows to rejoin Paris Agreement 'day one'",
-      "Green bond issuance tops $270bn globally — shattering previous record",
+      "BREAKING: Russia invades Ukraine — European gas prices spike 10x",
+      "Largest Western oil major posts $55.7bn annual profit",
+      "United States enacts $369bn clean-energy support package",
+      "EU ETS hits an all-time high near €105/tonne",
+      "Global Clean Energy Index falls as rate-sensitive investors retreat",
+      "Fossil-fuel equities return +64%; Broad Market Index falls -18%",
+      "Germany restarts coal capacity during energy emergency",
+      "Central bank delivers 75bp rate hike; renewables face higher financing costs",
     ],
   },
   {
     round: 5,
-    title: "Peak Euphoria and Net Zero Pledges",
-    period: "2021",
+    title: "Reality Check — ESG Backlash and Integrity Crisis",
+    period: "2023 – 2024",
     contextBullets: [
-      "Biden is inaugurated, recommits the US to Paris, and signals massive climate legislation.",
-      "COP26 in Glasgow: 140+ countries make net zero pledges covering 90% of global GDP.",
-      "Clean energy valuations reach extreme levels. SPACs flood the climate space.",
-      "The voluntary carbon market booms: credit prices reach $10–15/tonne.",
-      "PlantProtein Co and OatMilk Global are both publicly traded with combined market cap exceeding $25 billion.",
-      "BUT: inflation is rising. Central banks signal rate hikes. Bond yields are moving up.",
-      "EU carbon allowances surge past €50/tonne as the EU tightens the Emissions Trading System.",
+      "Anti-ESG political backlash sweeps the US as several states pull funds from ESG-focused managers.",
+      "US ESG fund outflows reach $13 billion in 2023 and accelerate in 2024.",
+      "Nordic Wind Power announces multi-billion-dollar offshore-wind writedowns and project cancellations.",
+      "An investigation finds that many standard forestry credits may have delivered little or no claimed climate benefit.",
+      "COP28 adopts historic language on transitioning away from fossil fuels, but provides no binding enforcement mechanism.",
+      "Interest rates remain high and growth shares lag as capital concentrates in AI-related companies.",
+      "The voluntary carbon market bifurcates: premium credits hold up while generic credits lose credibility and value.",
     ],
-    keyQuestion: "Everything climate looks like it only goes up. Take profits on the extraordinary rally, or ride the momentum?",
+    keyQuestion: "Is the climate investment thesis dead, or is this the buying opportunity of a generation?",
     videoScript:
-      "Peak euphoria. COP26 has produced net zero pledges covering ninety percent of global GDP. EU carbon allowances have crossed fifty euros for the first time. Global ESG assets under management have reached thirty-five trillion dollars. SPAC mania is reshaping the EV landscape, and the voluntary carbon market is booming. But the cracks are visible: inflation has hit a forty-year high, central banks are signalling rate hikes, and Nordic Wind Power is already thirty percent off its peak. Everything climate looks like it only goes up. Your decision: take profits on this rally, or ride the momentum.",
+      "A reality check has arrived. Anti-ESG politics drives sustainable-fund outflows, Nordic Wind Power records multi-billion-dollar writedowns, and an investigation questions the climate impact of many standard forestry credits. The voluntary carbon market splits sharply: premium credits hold their value while generic credits collapse. Meanwhile, the AI boom draws capital away from climate names. Is the climate-investment thesis dead, or is this the buying opportunity of a generation?",
     newsHeadlines: [
-      "BREAKING: COP26 — 140+ nations make net zero pledges covering 90% of GDP",
-      "Rivian IPO valued at $86bn on first day — bigger than Ford",
-      "Lucid Motors merges via SPAC in $24bn deal; EV SPAC mania peaks",
-      "EU ETS carbon price tops €50/tonne for first time — up 150% in 18 months",
-      "ESG assets under management hit $35 trillion globally — GSIA report",
-      "Fed signals rate hikes as US inflation prints 6.8% — 40-year high",
-      "Voluntary carbon market volumes quadruple; Verra credits reach $15/tonne",
-      "Ørsted stock falls 30% from peak as offshore wind auction prices plunge",
+      "BREAKING: investigation questions climate benefit of many standard forestry credits",
+      "Nordic Wind Power announces multi-billion-dollar offshore-wind writedown",
+      "US ESG fund outflows hit a record $13bn in 2023",
+      "Several US states pull pension funds from ESG-focused managers",
+      "COP28 calls for transition away from fossil fuels — without binding enforcement",
+      "AI leaders soar; climate shares are left behind",
+      "ElectraDrive deliveries miss expectations as EV price competition intensifies",
+      "Voluntary carbon market splits: premium credits hold while generic credits fall",
     ],
   },
   {
     round: 6,
-    title: "The Energy Crisis",
-    period: "2022",
+    title: "The Second Trump Era and AI Power Demand",
+    period: "Late 2024 – Mid-2026",
     contextBullets: [
-      "February 2022: Russia invades Ukraine. European energy security is shattered overnight.",
-      "Natural gas prices in Europe spike 10x. Oil surges above $120/barrel.",
-      "Fossil fuel companies post record profits: the world's largest oil company earns $55.7 billion.",
-      "The fossil fuel ETF returns +64% while the S&P 500 falls -18%.",
-      "Clean energy stocks collapse: rising rates, supply chain disruption, and renewed fossil fuel political support.",
-      "EU responds with REPowerEU: massive acceleration of renewables. But the short-term pain is severe.",
-      "August 2022: Biden signs the Inflation Reduction Act — $369 billion for clean energy, the biggest climate legislation in US history.",
-      "EU carbon allowances hit an ALL-TIME HIGH of €105/tonne as the energy crisis highlights carbon dependence.",
+      "A second Trump administration signals a Paris withdrawal, looser EV rules, and a rollback of clean-energy incentives.",
+      "The 2025 budget law shortens or ends several clean-energy tax-credit pathways, but projects already far into development retain significant support.",
+      "Tariffs on Chinese-linked solar supply chains lift costs and slow some US projects a full year into the new trade regime.",
+      "Nordic Wind Power completes a large rights issue after further offshore-wind cancellations and cost pressure.",
+      "AI data-centre load turns power availability into a strategic constraint; hyperscalers sign multi-gigawatt renewable and hydro agreements.",
+      "Nuclear returns to corporate power planning, with restart, long-term PPA, and small-reactor pipelines gathering momentum.",
+      "EU carbon prices hold broadly in the €70–80 range as maritime compliance expands and the system evolves rather than collapses.",
+      "Voluntary carbon demand continues to favour independently validated, high-integrity credits over undifferentiated supply.",
+      "Clean-power economics increasingly rest on demand growth and grid scarcity, not only on climate-policy tailwinds.",
     ],
-    keyQuestion: "Is this the bottom for clean energy, or the beginning of a new fossil fuel era? And what about the IRA?",
+    keyQuestion: "This is your final allocation. Policy is receding as a tailwind, AI power demand is a new one, and technology economics keep moving. Where does climate investing go from here?",
     videoScript:
-      "The energy crisis has rewritten the script. Russia's invasion of Ukraine has sent European gas prices up tenfold and pushed oil above one hundred and twenty dollars a barrel. Titan Petroleum has posted a profit of fifty-five point seven billion dollars — the largest ever recorded by a Western oil major. Fossil fuel equities returned sixty-four percent while broad markets fell eighteen. Clean energy has collapsed under rising rates and supply chain strain. And yet: EU carbon allowances have hit an all-time high of one hundred and five euros, and the Inflation Reduction Act has just committed three hundred and sixty-nine billion dollars to the transition. Is this the bottom for clean energy, or the dawn of a new fossil era?",
+      "Your final round spans the first eighteen months of the second Trump era. Clean-energy incentives have been narrowed, tariffs have raised supply-chain costs, and offshore wind remains under pressure: Nordic Wind Power has returned to shareholders for capital after further cancellations. Yet the story is not simply policy retreat. AI data centres are turning reliable power into a scarce strategic resource, driving multi-gigawatt renewable, hydro, and nuclear agreements. EU carbon pricing has held broadly in the seventies, while voluntary carbon buyers continue to separate quality from quantity. The question is no longer whether climate policy is a tailwind. It is where technology economics and power demand can carry the transition next.",
     newsHeadlines: [
-      "BREAKING: Russia invades Ukraine — European gas prices spike 10x",
-      "ExxonMobil posts $55.7bn profit — biggest ever by a Western oil major",
-      "Biden signs Inflation Reduction Act: $369bn for clean energy",
-      "EU ETS hits all-time high of €105/tonne as energy crisis bites",
-      "iShares Clean Energy ETF down 25% YTD; ICLN investors bail",
-      "Fossil fuel ETF XLE returns +64% in 2022; S&P 500 falls -18%",
-      "Germany reopens coal plants; Habeck declares 'energy emergency'",
-      "Fed delivers 75bp hike; 10-year yields top 4% — rate-sensitive renewables hammered",
-    ],
-  },
-  {
-    round: 7,
-    title: "Reality Check — ESG Backlash and Integrity Crisis",
-    period: "2023 – 2024",
-    contextBullets: [
-      "Anti-ESG political backlash sweeps the US: Republican states pull funds from ESG-focused managers.",
-      "US ESG fund outflows hit $13 billion in 2023 — the first negative year in a decade — accelerating to $19.6 billion in 2024.",
-      "Nordic Wind Power announces $5.6 billion in offshore wind project writedowns. Stock falls 52%.",
-      "January 2023: A major investigation reveals that 90%+ of standard REDD+ carbon credits had no real climate impact.",
-      "COP28 in Dubai produces historic 'transition away from fossil fuels' language, but no binding mechanism.",
-      "Interest rates remain elevated. Growth stocks continue to underperform value stocks.",
-      "The voluntary carbon market bifurcates sharply: premium credits hold value, generic credits collapse.",
-    ],
-    keyQuestion: "Is the climate investment thesis dead, or is this the buying opportunity of a generation?",
-    videoScript:
-      "A reality check has arrived. The anti-ESG backlash has driven US sustainable fund outflows to a record thirteen billion dollars, then nineteen and a half. Nordic Wind Power has announced five point six billion dollars in writedowns and the stock has halved. A major investigation has found that more than ninety percent of standard forestry-based carbon credits had no measurable climate impact. The voluntary carbon market has split sharply — premium credits hold their value while generic credits collapse. Meanwhile, the AI boom is pulling capital away from climate names. Is the climate investment thesis dead, or is this the buying opportunity of a generation?",
-    newsHeadlines: [
-      "BREAKING: Guardian investigation — 90%+ of Verra REDD+ credits 'phantom'",
-      "Ørsted announces $5.6bn offshore wind writedown; stock falls 25%",
-      "US ESG fund outflows hit record $13bn in 2023 — first negative year",
-      "Texas, Florida pull pension funds from BlackRock over ESG",
-      "COP28 deal calls for 'transition away' from fossil fuels — no binding mechanism",
-      "Nvidia soars 239% on AI boom; climate stocks left behind",
-      "Tesla deliveries miss estimates; China EV price war intensifies",
-      "Voluntary carbon market splits: Gold Standard premiums hold, generics collapse",
-    ],
-  },
-  {
-    round: 8,
-    title: "The Second Trump Era",
-    period: "Late 2024 – 2025",
-    contextBullets: [
-      "November 2024: Trump wins a second presidential term. Signals immediate Paris withdrawal, IRA rollback, and removal of EV mandates.",
-      "Election week: Global Clean Energy Index falls -11%, Solar ETF -15%, some clean energy stocks lose 50%+.",
-      "Tariffs on Chinese solar panels and EVs disrupt global clean energy supply chains.",
-      "Nordic Wind Power cancels its largest UK project. Trump issues stop-work orders on US offshore wind.",
-      "BUT: 80%+ of IRA-funded projects are in Republican districts. Full rollback proves politically difficult.",
-      "GreenBridge Infrastructure reports record results driven by AI data centre power demand — a new unexpected catalyst.",
-      "EU carbon allowances stabilise around €70/tonne. The market anticipates regulatory evolution rather than collapse.",
-    ],
-    keyQuestion: "This is your final allocation. Where does climate investing go from here?",
-    videoScript:
-      "Your final round. A second Trump presidency has shifted the landscape again: clean energy indices fell eleven percent in election week, solar exchange-traded funds dropped fifteen, and stop-work orders have halted US offshore wind. Nordic Wind Power has cancelled its largest UK project. But more than eighty percent of Inflation Reduction Act projects sit in Republican districts, making full rollback politically difficult. And a new catalyst has emerged: GreenBridge Infrastructure has posted record results driven by AI data centre power demand. EU carbon allowances have stabilised around seventy euros. This is your last allocation. Where does climate investing go from here?",
-    newsHeadlines: [
-      "BREAKING: Trump wins second term — vows immediate Paris withdrawal",
-      "Global Clean Energy Index falls -11% in election week; solar ETF -15%",
-      "Trump issues stop-work order on US offshore wind projects",
-      "Ørsted cancels Hornsea 4 project in UK; NextEra reviews pipeline",
-      "Tariffs on Chinese solar panels and EVs reshape supply chains",
-      "AI data centre power demand surges; hyperscalers sign renewable PPAs",
-      "80%+ of IRA-funded projects in Republican districts — rollback faces resistance",
-      "EU ETS stabilises around €70/tonne; REPowerEU accelerates",
-      "Brookfield Renewable posts record results on AI power contracts",
+      "BREAKING: second Trump administration begins Paris withdrawal process and narrows clean-energy incentives",
+      "2025 budget law accelerates several clean-energy tax-credit phase-outs; projects race to qualify",
+      "Tariffs on Chinese-linked solar imports raise project costs across the US supply chain",
+      "Nordic Wind Power completes major rights issue after further offshore-wind stress",
+      "Hyperscalers sign multi-gigawatt clean-power agreements to meet AI data-centre demand",
+      "Corporate nuclear restart and small-reactor pipeline expands as firm power becomes strategic",
+      "EU ETS auction price averages roughly €73/tonne in 2025",
+      "High-integrity carbon-credit principles become a market reference point as generic supply remains weak",
+      "GreenBridge Infrastructure expands long-term power contracts for technology customers",
     ],
   },
 ];
@@ -882,82 +834,65 @@ export const ROUND_TAKEAWAYS: RoundTakeaway[] = [
   {
     round: 1,
     takeaways: [
-      "Appalachian Coal filed for bankruptcy in April 2016 — holders lost 100% of their investment.",
-      "Clean energy stocks gained only modestly. The Paris rally was real but muted for equities in the near term.",
-      "EU carbon allowances remained cheap at €5–8/tonne — the signal was there but the price had not yet responded.",
-      "Policy signals can take years to feed into asset prices. Early movers in carbon allowances were eventually rewarded enormously, but patience was required.",
+      "Appalachian Coal's bankruptcy showed how quickly a declining incumbent can wipe out shareholders — and why timing matters as much as thesis.",
+      "Political shocks changed sentiment, but EU sustainable-finance rules and climate disclosure quietly built durable market infrastructure.",
+      "ESG flows became self-reinforcing: inflows lifted preferred shares, attracting further inflows and reinforcing the narrative.",
+      "The EU Green Deal turned social pressure and policy ambition into a long runway for climate-directed capital.",
+      "WildFire Utility made physical climate risk investable: a utility can be damaged by warming even without a transition-policy shock.",
+      "Cheap EU carbon allowances illustrated that policy signals can take years to become asset prices.",
     ],
-    didYouKnow: "Appalachian Coal's stock had already fallen 95% from $300 to $15 before the Paris Agreement was signed. The final 13% drop was the coup de grâce, not the main event. Timing matters as much as thesis.",
+    didYouKnow: "The California utility's shares fell about 91% from its 2017 high to its 2019 bankruptcy filing. It became an early, large-scale example of physical climate risk destroying shareholder value.",
   },
   {
     round: 2,
     takeaways: [
-      "Markets had largely priced in Trump's stance by inauguration. The actual Paris withdrawal announcement was a non-event for asset prices.",
-      "EU policy machinery accelerated behind the scenes: the SFDR framework was being designed, creating foundations for the ESG asset management boom.",
-      "The TCFD framework became the structural catalyst for corporate climate disclosure globally.",
-      "Geopolitics creates sentiment, but regulation creates markets. The EU's quiet regulatory build-up mattered more than US politics.",
+      "COVID-era ESG outperformance was largely a sector effect: tech-heavy indices benefited from the stay-at-home trade, not only sustainability credentials.",
+      "Negative oil prices were a storage shock, not a permanent change in energy economics.",
+      "The 2020 clean-energy rally had bubble characteristics: extreme valuations, retail enthusiasm, and a widening gap between price and fundamentals.",
+      "A sound long-term thesis can still be a poor investment when bought at the wrong valuation.",
     ],
-    didYouKnow: "Non-US renewable stocks lost 14% in the 20 days after Trump's election — but most of that loss was recovered within months. Short-term political shocks often reverse faster than expected.",
+    didYouKnow: "ElectraDrive rose 743% in 2020. Its broad-index inclusion triggered about $154 billion of trading in a single session.",
   },
   {
     round: 3,
     takeaways: [
-      "A major California utility's bankruptcy was the first major example of physical climate risk destroying shareholder value at utility scale — $30 billion in wildfire liabilities.",
-      "ESG fund flows created a self-reinforcing cycle: inflows drove up ESG stock prices, which attracted more inflows.",
-      "The EU Green Deal laid the groundwork for trillions in climate-directed capital over the following decade.",
-      "Social movements create political pressure, which creates policy, which creates markets. The 'Greta effect' translated into real capital flows.",
+      "Net-zero pledges covered most global GDP but generally lacked binding enforcement; announcements can move sentiment without guaranteeing cash flows.",
+      "Higher discount rates matter disproportionately for assets whose value rests on distant growth.",
+      "Narrative momentum is not fundamental value; the most compelling story can coincide with the least forgiving entry price.",
+      "The voluntary carbon boom showed how quickly a young market can grow before its integrity infrastructure catches up.",
     ],
-    didYouKnow: "The California utility's stock fell 91% from its 2017 high to its 2019 bankruptcy filing. It was one of the first 'climate bankruptcy' cases — a utility destroyed not by transition risk but by physical climate impacts.",
+    didYouKnow: "By the end of 2024, investors who had bought a leading clean-energy fund at its 2020 peak had lost more than 70% despite the unchanged long-run decarbonisation story.",
   },
   {
     round: 4,
     takeaways: [
-      "COVID-era ESG outperformance was largely a sector effect: tech-heavy ESG indices benefited from the stay-at-home trade, not from sustainability credentials.",
-      "Negative oil prices (-$37.63/barrel) were a once-in-history event caused by storage constraints, not a permanent shift in energy economics.",
-      "The clean energy rally of 2020 had the hallmarks of a speculative bubble: extreme valuations, retail investor euphoria, and fundamental disconnects.",
-      "A good investment thesis can still produce a bad investment at the wrong price. Valuation discipline matters even when you believe the long-term story.",
+      "Energy security trumped climate ambition in the short term, leading governments to reopen or extend fossil capacity.",
+      "The US clean-energy package triggered enormous manufacturing announcements, but market returns lagged the policy headline.",
+      "EU carbon allowances rose to a record during the crisis, showing that carbon-dependence risk can support compliance markets.",
+      "Geopolitical shocks can reverse market leadership overnight; diversification across clean and conventional energy was valuable in 2022.",
     ],
-    didYouKnow: "ElectraDrive rose +743% in 2020 alone. On the day it joined the S&P 500 in December, $154 billion worth of stock was traded in a single session — one of the largest trading events in market history.",
+    didYouKnow: "Titan Petroleum earned $55.7 billion in 2022, the largest annual profit recorded by a Western oil major, and became the year's standout equity.",
   },
   {
     round: 5,
     takeaways: [
-      "Clean energy valuations at their peak were pricing in decades of future growth. When interest rates rose, those distant cash flows were discounted more heavily.",
-      "Net zero pledges covered 90% of global GDP but had no binding enforcement mechanism. Markets briefly rallied on announcements, then reverted.",
-      "PlantProtein Co peaked at $240 in 2019 and was already declining — the alt-protein thesis was broken by consumer reality, not by climate policy.",
-      "Narrative momentum is not the same as fundamental value. The best time to sell is often when the story feels most compelling.",
+      "Nordic Wind Power demonstrated that even leading transition operators can be overwhelmed by rates, cost inflation, and political risk.",
+      "The voluntary carbon market bifurcated: premium credits retained value while generic forestry credits lost substantial credibility and price.",
+      "ESG flows varied by region; US outflows did not mean sustainable investing disappeared globally.",
+      "Quality matters more than labels. A 'green' designation is not a substitute for diligence on economics, integrity, and resilience.",
     ],
-    didYouKnow: "At its peak, a leading solar ETF had returned +234% in a single year (2020). By the end of 2024, nearly all of those gains had evaporated. Investors who bought at the peak lost more than 70%.",
+    didYouKnow: "The integrity crisis made buyers focus on proof of impact, additionality, and independent verification rather than simply the cheapest available tonne.",
   },
   {
     round: 6,
     takeaways: [
-      "Energy security trumped climate ambition in the short term. Governments that had been closing coal plants reopened them.",
-      "The Inflation Reduction Act triggered $133 billion in clean energy manufacturing announcements — but the market impact was slow to materialise.",
-      "EU carbon allowances actually rose to their all-time high (€105/tonne) during the energy crisis, as the crisis highlighted the cost of carbon dependence.",
-      "Geopolitical shocks can reverse market dynamics overnight. Diversification across both fossil and clean assets was the winning strategy in 2022.",
+      "Policy risk remains material, but the 2025 rollback narrowed and accelerated programmes rather than eliminating the clean-energy investment base.",
+      "AI power demand created a new source of long-term contracted demand for clean power, hydro, storage, transmission, and potentially nuclear.",
+      "Offshore wind remained a reminder that strategic value does not guarantee investable project economics.",
+      "EU carbon pricing and high-integrity voluntary credits showed that credible market design can endure even when broad climate sentiment weakens.",
+      "The climate-investment landscape is now shaped by policy, technology economics, and power demand; strong portfolios read all three.",
     ],
-    didYouKnow: "Titan Petroleum earned $55.7 billion in profit in 2022 — the largest annual profit ever recorded by a Western oil company. The stock many ESG investors had excluded became the year's best performer.",
-  },
-  {
-    round: 7,
-    takeaways: [
-      "Nordic Wind Power's collapse showed that even best-in-class operators can be destroyed by macro conditions: rising rates, cost inflation, and political reversals.",
-      "The voluntary carbon market bifurcated: Gold Standard premium credits actually increased in value, while generic REDD+ credits collapsed by 60-70%.",
-      "US ESG fund outflows were concentrated in the US; European sustainable fund flows remained net positive throughout.",
-      "Quality matters more than labels. 'Green' is not a sufficient investment thesis. Due diligence on specific assets, credit integrity, and business model resilience is essential.",
-    ],
-    didYouKnow: "A 2023 major media investigation found that over 90% of REDD+ forest carbon credits examined had no measurable impact on deforestation. The leading registry's market share fell from 80% to 35% within two years.",
-  },
-  {
-    round: 8,
-    takeaways: [
-      "Policy risk is the dominant driver of climate investment returns. The same asset class can look like genius or folly depending on who wins an election.",
-      "The IRA's political resilience — 80%+ of projects in Republican districts — illustrates how smart policy design can survive political transitions.",
-      "The AI/data centre energy demand surge created an unexpected new demand driver for renewables, partially decoupling clean energy economics from climate policy.",
-      "The climate investment landscape is shaped by three forces: policy, technology economics, and energy demand. The best investors read all three.",
-    ],
-    didYouKnow: "GreenBridge Infrastructure's record results in 2025 were driven substantially by contracts to supply power to AI data centres for major tech companies — a demand driver that didn't exist when most clean energy investments were originally underwritten.",
+    didYouKnow: "The 2025 tax-law changes reduced parts of the original clean-energy programme, but qualifying projects and politically popular manufacturing investments preserved a substantial share of its practical investment impact.",
   },
 ];
 
@@ -974,45 +909,38 @@ export interface PredictionQuestion {
 export const PREDICTION_QUESTIONS: PredictionQuestion[] = [
   {
     round: 2,
-    question: "After Trump's election, what happened to EU climate policy?",
+    question: "After the US announced its Paris withdrawal, what happened to EU climate policy?",
     options: ["It stalled", "It accelerated", "It reversed", "No change"],
     correctIndex: 1,
-    explanation: "The EU doubled down, launching the Sustainable Finance Action Plan and accelerating SFDR development — regulation creates markets.",
+    explanation: "The EU doubled down, launching its Sustainable Finance Action Plan and building disclosure rules — regulation creates markets.",
+  },
+  {
+    round: 3,
+    question: "What percentage of net-zero pledges at COP26 had legally binding targets?",
+    options: ["Less than 10%", "About 25%", "About 50%", "Over 75%"],
+    correctIndex: 0,
+    explanation: "Fewer than 10% of pledges had legally binding enforcement. Announcements move sentiment, but not necessarily capital.",
   },
   {
     round: 4,
-    question: "During the COVID crash, how did ESG funds perform vs conventional funds?",
-    options: ["Much worse", "About the same", "Slightly better", "Significantly better"],
+    question: "What was the best-performing asset class in 2022?",
+    options: ["Clean-energy equities", "Green bonds", "Fossil-fuel equities", "EU carbon"],
     correctIndex: 2,
-    explanation: "ESG funds slightly outperformed — but mainly because they were overweight tech stocks (the stay-at-home trade), not because of sustainability.",
+    explanation: "Fossil-fuel equities returned +64% in 2022 while broad-market indices fell -18%. Energy security trumped climate ambition.",
   },
   {
     round: 5,
-    question: "What percentage of net zero pledges at COP26 had legally binding targets?",
-    options: ["Less than 10%", "About 25%", "About 50%", "Over 75%"],
-    correctIndex: 0,
-    explanation: "Fewer than 10% of net zero pledges had any legally binding enforcement mechanism — announcements move sentiment, but not necessarily capital.",
-  },
-  {
-    round: 6,
-    question: "What was the best-performing asset class in 2022?",
-    options: ["Clean energy equities", "Green bonds", "Fossil fuel equities", "EU carbon"],
-    correctIndex: 2,
-    explanation: "Fossil fuel equities returned +64% in 2022 while broad market indices fell -18%. Energy security trumped climate ambition.",
-  },
-  {
-    round: 7,
     question: "True or False: ESG-labelled index funds outperformed because of their green holdings.",
     options: ["True", "False"],
     correctIndex: 1,
-    explanation: "False. The ESG Leaders Index outperformed the regular broad market index primarily because of tech stock concentration, not green companies.",
+    explanation: "False. The ESG Leaders Index outperformed the Broad Market Index primarily because of technology concentration, not green companies.",
   },
   {
-    round: 8,
-    question: "What percentage of IRA-funded clean energy projects are in Republican congressional districts?",
+    round: 6,
+    question: "What share of clean-energy projects had been located in Republican congressional districts?",
     options: ["About 30%", "About 50%", "About 65%", "Over 80%"],
     correctIndex: 3,
-    explanation: "Over 80% of IRA-funded projects landed in Republican districts, making full rollback politically difficult — smart policy design matters.",
+    explanation: "Over 80% were located in Republican districts, making a full rollback politically difficult and helping preserve parts of the investment pipeline.",
   },
 ];
 
@@ -1028,7 +956,7 @@ export interface Award {
 // ── CLOSING VIDEO SCRIPT BUILDER ──
 
 /**
- * Build a personalised ~100-word closing narration for the round-8 takeaways phase.
+ * Build a personalised ~100-word closing narration for the final-round takeaways phase.
  * Uses the existing pseudonymous asset names. No real company names.
  */
 export function buildClosingScript(
@@ -1058,7 +986,7 @@ export function buildClosingScript(
     holdingsLine = "Your fund ended the decade holding cash.";
   }
 
-  return `${safeName}, the final bell has rung. Your Climate Capital fund started at ${startFmt} and finished at ${endFmt} — a ${Math.abs(returnPct).toFixed(1)}% ${direction} over eight rounds. ${holdingsLine} You navigated a decade that compressed Paris, the energy crisis, ESG backlash, and an AI-driven power boom into a single evening. In real markets these forces play out over decades, and the discipline you have shown — reading policy, technology, and demand together — is exactly what climate investing requires. Thank you for playing. The decarbonisation transition continues; your fund's story is now part of it.`;
+  return `${safeName}, the final bell has rung. Your Climate Capital fund started at ${startFmt} and finished at ${endFmt} — a ${Math.abs(returnPct).toFixed(1)}% ${direction} over six rounds. ${holdingsLine} You navigated a decade that compressed Paris, the energy crisis, ESG backlash, and an AI-driven power boom into a single evening. In real markets these forces play out over decades, and the discipline you have shown — reading policy, technology, and demand together — is exactly what climate investing requires. Thank you for playing. The decarbonisation transition continues; your fund's story is now part of it.`;
 }
 
 function formatMillions(value: number): string {

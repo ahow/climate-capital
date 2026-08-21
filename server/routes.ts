@@ -40,11 +40,11 @@ function computePortfolioValue(
 }
 
 function calculateBenchmark(): number[] {
-  const n = GAME_ASSETS.length; // 22
+  const n = GAME_ASSETS.length;
   let totalValue = STARTING_CASH; // $100M
   const history: number[] = [totalValue]; // round 0
 
-  for (let round = 1; round <= 8; round++) {
+  for (let round = 1; round <= ROUND_BRIEFINGS.length; round++) {
     const perAsset = totalValue / n;
     let newTotal = 0;
 
@@ -382,7 +382,7 @@ ${assetList}`;
 
   app.get("/api/videos/briefing/:round", async (req: Request, res: Response) => {
     const round = parseInt(req.params.round as string, 10);
-    if (!Number.isFinite(round) || round < 1 || round > 8) {
+    if (!Number.isFinite(round) || round < 1 || round > ROUND_BRIEFINGS.length) {
       return res.status(400).json({ message: "Invalid round" });
     }
 

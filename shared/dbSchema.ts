@@ -5,7 +5,7 @@ export const games = pgTable("games", {
   code: varchar("code", { length: 8 }).notNull().unique(),
   status: varchar("status", { length: 20 }).notNull().default("lobby"),
   currentRound: integer("current_round").notNull().default(1),
-  maxRounds: integer("max_rounds").notNull().default(8),
+  maxRounds: integer("max_rounds").notNull().default(6),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   phaseDeadline: timestamp("phase_deadline"),
 });

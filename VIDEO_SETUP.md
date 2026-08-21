@@ -1,7 +1,7 @@
 # Video briefings — setup guide
 
 Climate Capital can play AI-generated news-anchor video briefings before each
-round and a personalised closing video at the end of round 8. Videos are
+round and a personalised closing video at the end of round 6. Videos are
 generated via [HeyGen](https://www.heygen.com/) and cached server-side: every
 round's briefing video is generated the first time any player reaches that
 round, then served from cache to everyone afterwards. The closing video is
@@ -38,13 +38,13 @@ Set these in **heroku.com → app → Settings → Reveal Config Vars**:
 ## How it works
 
 - `GET /api/videos/briefing/:round` — Client polls this when the player enters a briefing. First call kicks off generation; subsequent calls return the cached URL.
-- `POST /api/videos/closing/:playerId` — Client posts this once when the player enters round-8 takeaways. The script is built from the player's portfolio and includes their name.
+- `POST /api/videos/closing/:playerId` — Client posts this once when the player enters round-6 takeaways. The script is built from the player's portfolio and includes their name.
 - `POST /api/webhooks/heygen` — HeyGen calls this when a video finishes rendering. Updates the cached row with the video URL (or a failure message). Signature verified via HMAC-SHA256 with `HEYGEN_WEBHOOK_SECRET` when set.
 
 ## Cost control
 
-- Round briefing videos are cached per-round across all players: at most 8 videos for the entire deployment.
-- Closing videos are 1 per player. If you reset a player and they reach round 8 again, a new video is generated (the cache key is the player ID).
+- Round briefing videos are cached per-round across all players: at most 6 videos for the entire deployment.
+- Closing videos are 1 per player. If you reset a player and they reach round 6 again, a new video is generated (the cache key is the player ID).
 - Setting `DISABLE_VIDEO=true` instantly reverts to text. Already-cached videos are not deleted.
 
 ## Brand and content guarantees

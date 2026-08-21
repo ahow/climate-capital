@@ -4,12 +4,12 @@ An interactive multiplayer game that tests climate investing skills using real e
 
 ## Overview
 
-Players manage a $100M portfolio across 8 rounds, each based on a real period in climate finance history — from the Paris Agreement to the second Trump era. Choose from 22 investable assets spanning equities, ETFs, green bonds, infrastructure, carbon credits, and thematic funds.
+Players manage a $100M portfolio across 6 rounds, each based on a real period in climate finance history — from the Paris Agreement to the second Trump era. Choose from 23 investable assets spanning equities, ETFs, green bonds, infrastructure, carbon credits, and thematic funds.
 
 ## Features
 
-- **22 investable assets** across 6 asset classes, with prices based on real historical performance
-- **8 rounds** covering major climate events: Paris Agreement, Trump Shock, ESG Boom, COVID, IRA, and more
+- **23 investable assets** across 6 asset classes, with prices based on real historical performance
+- **6 rounds** covering major climate events: Paris Agreement, Trump Shock, ESG Boom, COVID, IRA, and more
 - **Multiplayer** — host a game and share the code for others to join
 - **Trading interface** with position limits (40% max per asset) and lock periods for infrastructure assets
 - **Leaderboard** updated each round

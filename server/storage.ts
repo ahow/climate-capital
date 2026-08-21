@@ -14,6 +14,7 @@ import {
   STARTING_CASH,
   MAX_POSITION_PCT,
   AWARDS,
+  ROUND_BRIEFINGS,
 } from "@shared/gameData";
 
 function generateCode(): string {
@@ -122,7 +123,7 @@ export class MemStorage implements IStorage {
       code,
       status: "lobby",
       currentRound: 1,
-      maxRounds: 8,
+      maxRounds: ROUND_BRIEFINGS.length,
       players: {},
       createdAt: Date.now(),
       phaseDeadline: null,

@@ -17,6 +17,7 @@ import {
   GAME_ASSETS,
   STARTING_CASH,
   MAX_POSITION_PCT,
+  ROUND_BRIEFINGS,
 } from "@shared/gameData";
 
 const pool = new pg.Pool({
@@ -125,7 +126,7 @@ export class DbStorage implements IStorage {
       const code = generateCode();
       const [newGame] = await db
         .insert(games)
-        .values({ code, status: "lobby", currentRound: 1, maxRounds: 8 })
+        .values({ code, status: "lobby", currentRound: 1, maxRounds: ROUND_BRIEFINGS.length })
         .returning();
       return buildGameSession(newGame);
     }
