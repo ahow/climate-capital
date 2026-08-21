@@ -138,6 +138,17 @@ STRATEGIES.append(("Carbon-forward tilt", [carbon_fwd]*6, [0.0]*6))
 fossil = {"sp500": 0.40, "titan": 0.30, "esgindex": 0.20, "greenbond": 0.10}
 STRATEGIES.append(("Fossil hedge (SP500 + XLE)", [fossil]*6, [0.0]*6))
 
+# 9a. Always brown (XLE buy-and-hold)
+STRATEGIES.append(("Always brown (XLE buy-hold)", *all_in("titan")))
+
+# 9b. Always brown (coal buy-and-hold)
+STRATEGIES.append(("Always brown (coal buy-hold)", *all_in("appcoal")))
+
+# 9c. Always brown (diversified rebalanced)
+#     Oil majors, coal, legacy auto - the mirror image of always-green.
+brown_alloc = {"titan": 0.40, "appcoal": 0.25, "autoemissions": 0.35}
+STRATEGIES.append(("Always brown (rebalanced)", [brown_alloc]*6, [0.0]*6))
+
 # 10. 60/40 with green tilt
 sixty_forty = {"esgindex": 0.35, "sp500": 0.25, "greenbond": 0.20, "transitionbond": 0.10, "nextgen": 0.10}
 STRATEGIES.append(("60/40 with green tilt", [sixty_forty]*6, [0.0]*6))
@@ -160,6 +171,32 @@ for rank, (name, final, _) in enumerate(results, 1):
     ret = (final / STARTING_CASH - 1) * 100
     print(f"{rank:<5} {name:<45} ${final/1e6:>10,.1f}m {ret:>9.1f}%")
 
+# Per-round value breakdown for green vs brown vs adaptive
+print("\n" + "=" * 80)
+print("PER-ROUND END VALUE ($m): GREEN vs BROWN vs ADAPTIVE vs PASSIVE")
+print("=" * 80)
+focus_names = {
+    "Always green (rebalanced)",
+    "Always green (ICLN buy-hold)",
+    "Always brown (rebalanced)",
+    "Always brown (XLE buy-hold)",
+    "Always brown (coal buy-hold)",
+    "Passive ESG index",
+    "Passive broad market (SP500)",
+    "Nuanced adaptive analyst",
+}
+results_by_name = {name: (final, log) for name, final, log in results}
+header = f"{'Strategy':<38} " + " ".join(f"{'R'+str(r):>9}" for r in range(1, 7))
+print(header)
+print("-" * len(header))
+for name in ["Nuanced adaptive analyst", "Passive ESG index", "Passive broad market (SP500)",
+             "Always green (rebalanced)", "Always green (ICLN buy-hold)",
+             "Always brown (rebalanced)", "Always brown (XLE buy-hold)", "Always brown (coal buy-hold)"]:
+    if name not in results_by_name: continue
+    final, log = results_by_name[name]
+    row = f"{name:<38} " + " ".join(f"{end/1e6:>8.0f}m" for _, _, end in log)
+    print(row)
+
 # Save summary
 summary = {
     "starting_cash": STARTING_CASH,
@@ -167,7 +204,11 @@ summary = {
         {"rank": i+1, "strategy": name, "final_value_m": round(final/1e6, 1),
          "total_return_pct": round((final/STARTING_CASH - 1)*100, 1)}
         for i, (name, final, _) in enumerate(results)
-    ]
+    ],
+    "per_round": {
+        name: [round(end/1e6, 1) for _, _, end in log]
+        for name, (_, log) in results_by_name.items()
+    }
 }
 Path('/tmp/basket_strategy_results.json').write_text(json.dumps(summary, indent=2))
 print("\nSaved to /tmp/basket_strategy_results.json")
