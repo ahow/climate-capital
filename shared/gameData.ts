@@ -21,26 +21,27 @@ export const GAME_ASSETS: GameAsset[] = [
   // ─── PUBLIC EQUITIES — CLEAN ENERGY ───
   {
     id: "electradrive",
-    name: "ElectraDrive",
-    realBasis: "Tesla (TSLA)",
+    name: "Global EV Leaders",
+    realBasis: "KraneShares Electric Vehicles ETF (KARS) — basket of Tesla, BYD, Li Auto, NIO, XPeng, Rivian, Lucid and other global EV manufacturers",
     assetClass: "equity",
-    sector: "Electric Vehicles",
-    description: "A US electric vehicle maker that is also expanding into energy storage and solar. Highly volatile, driven by CEO profile and market sentiment as much as fundamentals.",
+    sector: "Electric Vehicles (Diversified)",
+    description: "A diversified basket of global electric vehicle manufacturers, spanning US, European and Chinese pure-plays. Reduces single-name risk but still highly cyclical with rates and EV demand.",
     riskLevel: "very-high",
     startPrice: 100,
-    // Round endpoints: R1(2019), R2(2020), R3(2021), R4(2022), R5(2024), R6(mid-2026)
-    // TSLA: $14→$14.25→$20.47→$235→$381→$123→$248→$350 (approx, split-adj)
-    roundPrices: [174, 1470, 2202, 770, 2524, 2000],
+    // Basket returns from KARS ETF plus peer approximation pre-2019.
+    // R1 (2016-2019 compound): +48%, R2 (2020): +71%, R3 (2021): +24%,
+    // R4 (2022): -39%, R5 (2023-24 compound): -24%, R6 (2025-mid2026): +58%
+    roundPrices: [148, 253, 315, 191, 145, 229],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mega", marketCapBn: 780, peRatioProxy: 65, dividendYieldPct: 0 },
     transitionThesis:
-      "The bellwether of the electric-vehicle shift, pairing high-volume EV production with energy storage and solar — a pure-play bet on transport and grid electrification.",
-    riskProfile: "Speculative",
+      "Diversified exposure to the electric-vehicle transition across US, European and Chinese manufacturers — a broad bet on transport electrification without concentration in any single name.",
+    riskProfile: "High",
     keyRisks: [
-      "Valuation swings dramatically with sentiment, not just fundamentals",
-      "Heavy reliance on a single high-profile CEO",
-      "Intensifying EV price competition compresses margins",
+      "Sector-wide valuation swings with rates and EV demand cycles",
+      "Intensifying price competition compresses margins across the basket",
+      "Chinese overcapacity and tariff risk affect all constituents",
     ],
     historicalNotes: [
       { round: 2, event: "Joins the broad market index; record rebalancing trade" },
@@ -50,25 +51,27 @@ export const GAME_ASSETS: GameAsset[] = [
   },
   {
     id: "solarpeak",
-    name: "SolarPeak Inverters",
-    realBasis: "Enphase Energy (ENPH)",
+    name: "Solar Equipment Leaders",
+    realBasis: "Invesco Solar ETF (TAN) — basket of Enphase, SolarEdge, First Solar, Sunrun, Array, Nextracker and other solar equipment and installer names",
     assetClass: "equity",
-    sector: "Solar Technology",
-    description: "A leading manufacturer of solar micro-inverters. Rides the residential solar boom but is vulnerable to regulatory changes in key markets like California.",
+    sector: "Solar (Diversified)",
+    description: "A diversified basket of solar equipment manufacturers and installers. Rides the solar boom but exposed to residential-solar subsidy changes and tariff regimes across the basket.",
     riskLevel: "very-high",
     startPrice: 100,
-    // ENPH: ~$5→$6→$25→$175→$307→$135→$120→$65
-    roundPrices: [744, 4999, 5212, 7549, 3765, 3200],
+    // Invesco TAN annual returns: 2016 -43%, 2017 +54%, 2018 -26%, 2019 +67%,
+    // 2020 +234% (whole-basket surge), 2021 -25%, 2022 -5%, 2023 -27%, 2024 -38%,
+    // 2025 +48%, H1 2026 +13%
+    roundPrices: [108, 362, 271, 257, 117, 197],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mid", marketCapBn: 18, peRatioProxy: 40, dividendYieldPct: 0 },
     transitionThesis:
-      "A direct play on residential solar adoption: its micro-inverters are the enabling hardware for distributed rooftop generation as homeowners electrify.",
-    riskProfile: "Speculative",
+      "A diversified play on solar adoption spanning residential, commercial and utility segments — the enabling hardware for distributed and grid-scale solar as electrification scales.",
+    riskProfile: "High",
     keyRisks: [
-      "Highly sensitive to residential solar subsidy and net-metering rules",
-      "Concentrated in a few key state markets",
-      "Extreme share-price volatility through the rate cycle",
+      "Sector-wide sensitivity to residential solar subsidies and net-metering rules",
+      "Tariff regimes affect Chinese supply and pricing across the basket",
+      "Extreme volatility through the rate cycle",
     ],
     historicalNotes: [
       { round: 2, event: "Residential solar boom drives a parabolic re-rating" },
@@ -77,24 +80,25 @@ export const GAME_ASSETS: GameAsset[] = [
   },
   {
     id: "nordicwind",
-    name: "Nordic Wind Power",
-    realBasis: "Ørsted (ORSTED)",
+    name: "Global Wind Energy Basket",
+    realBasis: "First Trust Global Wind Energy ETF (FAN) — basket of Ørsted, Vestas, Siemens Energy, RWE, Iberdrola and other wind developers and OEMs",
     assetClass: "equity",
-    sector: "Offshore Wind",
-    description: "Europe's largest offshore wind developer. A poster child for the energy transition, but exposed to construction costs, interest rates, and political risk.",
+    sector: "Wind Energy (Diversified)",
+    description: "A diversified basket of global wind energy developers and turbine manufacturers. Exposed to interest rates, project economics, and turbine-supply chain across multiple constituents.",
     riskLevel: "high",
     startPrice: 100,
-    // Orsted (DKK): IPO ~134→280→600→800→1000→400→180→122
-    roundPrices: [194, 314, 186, 129, 86, 55],
+    // FAN annual returns: R1 (2016-19 compound est) +21%, R2 (2020) +61%,
+    // R3 (2021) -12%, R4 (2022) -13%, R5 (2023-24) -12%, R6 (2025-mid26) +33%
+    roundPrices: [121, 194, 172, 149, 132, 176],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Large", marketCapBn: 45, peRatioProxy: 22, dividendYieldPct: 2.5 },
     transitionThesis:
-      "Europe's largest offshore wind developer and a flagship of the energy transition — building the large-scale generation capacity that decarbonised grids require.",
+      "Diversified exposure to the global wind build-out — both project developers and turbine OEMs — providing the large-scale generation capacity decarbonised grids require.",
     riskProfile: "High",
     keyRisks: [
-      "Project economics highly exposed to interest rates",
-      "Construction-cost overruns on multi-year builds",
+      "Sector economics highly exposed to interest rates",
+      "Turbine-supply-chain and pricing pressure across OEMs",
       "Auction-price and political risk in key markets",
     ],
     historicalNotes: [
@@ -105,23 +109,24 @@ export const GAME_ASSETS: GameAsset[] = [
   },
   {
     id: "hydrogen",
-    name: "HydroGen Systems",
-    realBasis: "Plug Power (PLUG)",
+    name: "Hydrogen Economy Basket",
+    realBasis: "Peer basket of Plug Power, Ballard, Bloom Energy, Nel, ITM Power and Linde — pre-2021 uses peer approximation, post-2021 tracks Global X Hydrogen ETF (HYDR)",
     assetClass: "equity",
-    sector: "Hydrogen / Fuel Cells",
-    description: "A hydrogen fuel cell company promising to revolutionise industrial energy. Has never been profitable but periodically attracts enormous speculative interest.",
+    sector: "Hydrogen (Diversified)",
+    description: "A diversified basket of hydrogen fuel-cell and electrolyser companies. Speculative early-stage sector where most constituents are unprofitable but a rare cost breakthrough could re-rate the whole basket.",
     riskLevel: "very-high",
     startPrice: 100,
-    // PLUG: $2.67→$2.50→$3→$33→$65→$13→$5→$2
-    roundPrices: [150, 1607, 1338, 586, 213, 140],
+    // Basket returns: R1 (2016-19) +20% peer estimate, R2 (2020) +300% (peer avg <<< Plug +973%),
+    // R3 (2021) -50%, R4 (2022) -55%, R5 (2023-24) -76%, R6 (2025-mid26) +5%
+    roundPrices: [120, 478, 239, 108, 26, 27],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mid", marketCapBn: 6, peRatioProxy: 0, dividendYieldPct: 0 },
     transitionThesis:
-      "A bet on green hydrogen as the decarbonisation pathway for hard-to-electrify industry and heavy transport — high optionality if fuel-cell economics break through.",
+      "A diversified bet on green hydrogen as the decarbonisation pathway for hard-to-electrify industry and heavy transport — high optionality if fuel-cell economics break through anywhere in the basket.",
     riskProfile: "Speculative",
     keyRisks: [
-      "Has never been profitable; relies on continued funding",
+      "Most constituents unprofitable; rely on continued equity funding",
       "Hydrogen cost curve remains far above incumbents",
       "Periodic speculative spikes detached from fundamentals",
     ],
@@ -132,25 +137,26 @@ export const GAME_ASSETS: GameAsset[] = [
   },
   {
     id: "nextgen",
-    name: "NextGen Utilities",
-    realBasis: "NextEra Energy (NEE)",
+    name: "Clean Utility Leaders",
+    realBasis: "Peer basket of NextEra, AES, Xcel, Southern, Consolidated Edison and Duke — proxied by the S&P 500 Utilities Sector Index",
     assetClass: "equity",
-    sector: "Renewable Utility",
-    description: "The world's largest generator of wind and solar energy, combined with a regulated Florida utility. Lower volatility than pure-play renewables, with a growing dividend.",
+    sector: "Renewable Utilities (Diversified)",
+    description: "A diversified basket of regulated utilities with large clean-generation exposure. Lower volatility than pure-play renewables, with growing dividends and long-duration AI-power tailwind.",
     riskLevel: "medium",
     startPrice: 100,
-    // NEE (split-adj): ~$24→$36→$48→$72→$88→$76→$68→$76
-    roundPrices: [235, 270, 336, 318, 231, 285],
+    // S&P 500 Utilities-style returns: R1 (2016-19 compound) +68%, R2 (2020) -1%,
+    // R3 (2021) +17%, R4 (2022) +1%, R5 (2023-24) +14%, R6 (2025-mid26) +27%
+    roundPrices: [168, 167, 196, 199, 227, 289],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mega", marketCapBn: 150, peRatioProxy: 24, dividendYieldPct: 2.4 },
     transitionThesis:
-      "The world's largest wind and solar generator wrapped around a regulated utility — a lower-volatility way to own the build-out of clean generation with a growing dividend.",
+      "A diversified basket of clean-generation utilities — a lower-volatility way to own the build-out of renewable generation with growing dividends, now boosted by AI data-centre power demand.",
     riskProfile: "Moderate",
     keyRisks: [
-      "Rate-sensitive given large regulated rate base",
-      "Execution risk on an ambitious renewables pipeline",
-      "Regulatory and weather exposure in its home market",
+      "Rate-sensitive given large regulated rate bases",
+      "Execution risk on ambitious renewables pipelines",
+      "Regulatory and weather exposure across service territories",
     ],
     historicalNotes: [
       { round: 3, event: "Renewables leadership lifts the stock to a high" },
@@ -161,23 +167,24 @@ export const GAME_ASSETS: GameAsset[] = [
   // ─── PUBLIC EQUITIES — FOSSIL FUELS ───
   {
     id: "titan",
-    name: "Titan Petroleum",
-    realBasis: "ExxonMobil (XOM)",
+    name: "Integrated Oil Majors",
+    realBasis: "Energy Select Sector SPDR (XLE) — basket of ExxonMobil, Chevron, Shell, TotalEnergies, BP, Equinor and other integrated oil and gas majors",
     assetClass: "equity",
-    sector: "Oil Major",
-    description: "The world's largest publicly traded oil company. Strong dividend, massive cash flows. Many ESG investors have excluded it, but energy security crises periodically make it the market's best performer.",
+    sector: "Oil & Gas Majors (Diversified)",
+    description: "A diversified basket of integrated oil and gas majors. Strong dividends and cash flows, excluded by many ESG mandates but periodically the market's best performer during energy security crises.",
     riskLevel: "medium",
     startPrice: 100,
-    // XOM: ~$80→$82→$68→$42→$61→$110→$100→$110 (+ dividends)
-    roundPrices: [85, 41, 70, 135, 126, 135],
+    // XLE annual returns: R1 (2016-19) +16%, R2 (2020) -32.5% (basket softer than Exxon -51%),
+    // R3 (2021) +53%, R4 (2022) +64%, R5 (2023-24) +5%, R6 (2025-mid26) +40%
+    roundPrices: [116, 78, 120, 197, 207, 290],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mega", marketCapBn: 450, peRatioProxy: 12, dividendYieldPct: 3.5 },
     transitionThesis:
-      "A transition-portfolio diversifier rather than a green asset: strong cash flows and dividends provide ballast and an energy-security hedge when fossil demand spikes.",
+      "A diversified transition-portfolio hedge rather than a green asset: strong basket-wide cash flows and dividends provide ballast and an energy-security hedge when fossil demand spikes.",
     riskProfile: "Moderate",
     keyRisks: [
-      "Long-run demand erosion as the transition advances",
+      "Long-run demand erosion as the transition advances across the basket",
       "Excluded by many ESG mandates, limiting the buyer base",
       "Earnings highly cyclical with the oil price",
     ],
@@ -188,24 +195,26 @@ export const GAME_ASSETS: GameAsset[] = [
   },
   {
     id: "appcoal",
-    name: "Appalachian Coal",
-    realBasis: "Peabody Energy (BTU)",
+    name: "Coal Producers Basket",
+    realBasis: "Peer basket of Peabody, Arch Resources, Consol Energy, Alliance Resource Partners and Warrior Met Coal — proxied by the (now-closed) VanEck Coal ETF (KOL) plus peer average post-2020",
     assetClass: "equity",
-    sector: "Coal Mining",
-    description: "The largest private-sector coal company in the world. Under intense pressure from the energy transition and Paris Agreement commitments. Filed for bankruptcy once already.",
+    sector: "Coal Mining (Diversified)",
+    description: "A diversified basket of the largest listed coal producers. Under intense structural pressure from decarbonisation but periodically the market's best performer during energy crises.",
     riskLevel: "very-high",
     startPrice: 100,
-    // BTU: ~$15 (2015, already in freefall)→$0 (bankruptcy 2016)→emerged→spike→fade
-    roundPrices: [92, 24, 101, 265, 247, 220],
+    // KOL / peer basket: R1 (2016-19) +13% (2016 +109% recovery, then decline),
+    // R2 (2020) -30% (softer than Peabody's -74%), R3 (2021) +160%, R4 (2022) +180%,
+    // R5 (2023-24) -41%, R6 (2025-mid26) -5%
+    roundPrices: [113, 79, 205, 574, 342, 325],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Small", marketCapBn: 2, peRatioProxy: 6, dividendYieldPct: 0 },
     transitionThesis:
-      "Included as the cautionary counter-case: a fossil incumbent most directly in the path of decarbonisation, illustrating stranded-asset and transition risk.",
+      "Included as the cautionary counter-case: a basket of fossil incumbents most directly in the path of decarbonisation, illustrating stranded-asset and transition risk across the sector.",
     riskProfile: "Speculative",
     keyRisks: [
       "Structural demand decline under climate policy",
-      "History of bankruptcy and restructuring",
+      "Constituent bankruptcy and restructuring history",
       "Extreme price swings on commodity and policy news",
     ],
     historicalNotes: [
@@ -215,25 +224,26 @@ export const GAME_ASSETS: GameAsset[] = [
   },
   {
     id: "autoemissions",
-    name: "AutoEmissions AG",
-    realBasis: "Volkswagen (VOW)",
+    name: "Legacy Auto Basket",
+    realBasis: "Peer basket of Volkswagen, Ford, GM, Stellantis, Toyota, Honda and Hyundai — legacy internal-combustion manufacturers attempting EV transitions",
     assetClass: "equity",
-    sector: "Automotive",
-    description: "A major European car manufacturer caught in an emissions cheating scandal. Now attempting a costly pivot to electric vehicles with uncertain results.",
+    sector: "Legacy Auto (Diversified)",
+    description: "A diversified basket of legacy internal-combustion auto manufacturers attempting costly pivots to electric vehicles. Facing intense Chinese EV competition and uncertain execution across the basket.",
     riskLevel: "high",
     startPrice: 100,
-    // VW: ~€170→€140→€145→€140→€200→€120→€110→€95
-    roundPrices: [122, 120, 182, 104, 82, 78],
+    // Peer basket estimate: R1 (2016-19) +13%, R2 (2020) -5%, R3 (2021) +40%,
+    // R4 (2022) -30%, R5 (2023-24) -33%, R6 (2025-mid26) -5%
+    roundPrices: [113, 107, 150, 105, 71, 67],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Large", marketCapBn: 70, peRatioProxy: 5, dividendYieldPct: 5.5 },
     transitionThesis:
-      "A legacy automaker attempting a costly pivot to electric vehicles — a turnaround bet on whether an incumbent can out-scale pure-play EV challengers.",
+      "A basket of legacy automakers attempting costly EV pivots — a turnaround bet on whether incumbents can out-scale pure-play EV challengers.",
     riskProfile: "High",
     keyRisks: [
-      "Heavy capital cost of the EV transition weighs on returns",
-      "Legacy emissions-scandal liabilities and reputational drag",
-      "Intense competition from dedicated EV makers",
+      "Heavy capital cost of EV transitions weighs on returns",
+      "Legacy emissions liabilities and reputational drag",
+      "Intense competition from dedicated EV makers, particularly in China",
     ],
     historicalNotes: [
       { round: 3, event: "EV-pivot optimism lifts the shares" },
@@ -251,8 +261,9 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A diversified ETF tracking global clean energy companies. The single most popular way to get broad clean energy exposure, but with devastating volatility.",
     riskLevel: "high",
     startPrice: 100,
-    // ICLN: ~$11→$11→$12→$28→$33→$18→$14→$15
-    roundPrices: [119, 287, 215, 202, 158, 175],
+    // ICLN actual annual returns: R1 (2016-19 compound) +33%, R2 (2020) +141%,
+    // R3 (2021) -24%, R4 (2022) -5%, R5 (2023-24) -41%, R6 (2025-mid26) +66%
+    roundPrices: [133, 321, 245, 232, 137, 227],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 1.2 },
@@ -265,7 +276,7 @@ export const GAME_ASSETS: GameAsset[] = [
       "Less diversification than the headline 'broad' label implies",
     ],
     historicalNotes: [
-      { round: 2, event: "Clean-energy index returns +142% in a single year" },
+      { round: 2, event: "Clean-energy index posts an extraordinary rally in a single year" },
       { round: 5, event: "Multi-year drawdown unwinds most of the rally" },
     ],
   },
@@ -278,8 +289,9 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A broad US large-cap index that applies ESG screening. Tracks very closely to the S&P 500 — the 'dirty secret' is that outperformance comes from tech overweighting, not green credentials.",
     riskLevel: "medium",
     startPrice: 100,
-    // S&P 500 ESG roughly tracks S&P 500 with slight outperformance
-    roundPrices: [186, 237, 312, 257, 320, 385],
+    // S&P 500 ESG Index actual: R1 (2016-19) +75%, R2 (2020) +27%, R3 (2021) +31%,
+    // R4 (2022) -17%, R5 (2023-24) +49%, R6 (2025-mid26) +27%
+    roundPrices: [175, 223, 292, 242, 360, 458],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 1.3 },
@@ -304,8 +316,9 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "The benchmark. A passive allocation to the 500 largest US companies. The question every climate investor must answer: can you beat this?",
     riskLevel: "medium",
     startPrice: 100,
-    // S&P 500: ~2050→2700→2900→3750→4770→3840→4770→5600
-    roundPrices: [158, 184, 233, 188, 288, 355],
+    // S&P 500 total return actual: R1 (2016-19) +72%, R2 (2020) +18%, R3 (2021) +29%,
+    // R4 (2022) -18%, R5 (2023-24) +58%, R6 (2025-mid26) +33%
+    roundPrices: [172, 204, 262, 215, 339, 451],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 1.4 },
@@ -332,8 +345,9 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A diversified green bond fund offering modest yields with a small 'greenium' discount. Low volatility compared to equities, but vulnerable to interest rate rises.",
     riskLevel: "low",
     startPrice: 100,
-    // Green bonds: modest returns, hit in 2022 by rates
-    roundPrices: [114, 128, 118, 92, 101, 108],
+    // Bloomberg Green Bond Index: R1 (2016-19) +14%, R2 (2020) +9%, R3 (2021) -5%,
+    // R4 (2022) -28%, R5 (2023-24) +5%, R6 (2025-mid26) +8%
+    roundPrices: [114, 124, 118, 85, 89, 97],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 3.0 },
@@ -358,7 +372,8 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A sustainability-linked bond where the coupon steps up if the issuer misses emissions targets. A pioneer instrument testing whether financial incentives can drive corporate decarbonisation.",
     riskLevel: "low",
     startPrice: 100,
-    roundPrices: [108, 115, 108, 88, 96, 102],
+    // Sustainability-linked note path: modest yield with duration hit in R4
+    roundPrices: [112, 120, 118, 100, 109, 115],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "ETF", dividendYieldPct: 3.2 },
@@ -467,8 +482,10 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "European Union Emissions Trading System allowances. The most successful carbon pricing mechanism in the world. From €5/tonne in 2015 to a peak of €105 in 2023. Extreme volatility with political and regulatory risk.",
     riskLevel: "high",
     startPrice: 100,
-    // EU ETS: €5→€7→€22→€33→€50→€85→€65→€70
-    roundPrices: [364, 408, 655, 1166, 933, 1050],
+    // EU ETS EUA actual path: 2015 €8 → 2019 €25 → 2020 €33 → 2021 €80 → 2022 €80 →
+    // 2024 €70 → mid-2026 €78. R1 (2016-19) +148%, R2 (2020) +20%, R3 (2021) +150%,
+    // R4 (2022) -5%, R5 (2023-24) -32%, R6 (2025-mid26) +16%
+    roundPrices: [248, 298, 745, 708, 482, 556],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Commodity" },
@@ -493,8 +510,8 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A portfolio of high-quality voluntary carbon credits from independently certified projects. More expensive than generic credits, but proven additionality and resistant to integrity scandals.",
     riskLevel: "medium",
     startPrice: 100,
-    // Quality VCM: $4→$5→$7→$12→$15→$14→$16→$17
-    roundPrices: [114, 136, 164, 218, 182, 195],
+    // Premium VCM (Gold Standard / CCP-aligned): steady demand from high-integrity buyers
+    roundPrices: [123, 141, 183, 211, 199, 219],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Commodity" },
@@ -519,8 +536,8 @@ export const GAME_ASSETS: GameAsset[] = [
     description: "A portfolio of standard forestry-based carbon credits, primarily REDD+ projects certified by a leading registry. Cheaper than premium credits, but vulnerable to integrity challenges.",
     riskLevel: "high",
     startPrice: 100,
-    // Standard VCM: $3→$4→$5→$9→$12→$10→$4→$4
-    roundPrices: [120, 92, 158, 315, 185, 155],
+    // Generic REDD+ VCM: 2023 Guardian expose crushed generic credits in R5
+    roundPrices: [122, 115, 185, 259, 149, 121],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Commodity" },
@@ -567,15 +584,15 @@ export const GAME_ASSETS: GameAsset[] = [
   // ─── THEMATIC / HIGH-CONVICTION ───
   {
     id: "plantprotein",
-    name: "PlantProtein Co",
-    realBasis: "Beyond Meat (BYND)",
+    name: "Alternative Protein Basket",
+    realBasis: "Peer basket of Beyond Meat, Oatly, Vital Farms and other listed alt-protein and plant-based food companies",
     assetClass: "thematic",
-    sector: "Alt Protein",
-    description: "A plant-based meat company that went public to enormous fanfare. The IPO tripled on day one. Consumer demand for alt-protein is the key question.",
+    sector: "Alt Protein (Diversified)",
+    description: "A diversified basket of listed alternative-protein companies that went public with enormous fanfare. Consumer demand for alt-protein is the key question, with disappointment weighing on the whole basket.",
     riskLevel: "very-high",
     startPrice: 100,
-    // Alt-protein: public listing in 2019, then a sustained decline
-    roundPrices: [100, 165, 86, 16, 12, 8],
+    // Alt-protein peer basket: post-2019 IPO wave, followed by sustained decline
+    roundPrices: [130, 214, 139, 21, 10, 6],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Small", marketCapBn: 1, peRatioProxy: 0, dividendYieldPct: 0 },
@@ -594,25 +611,25 @@ export const GAME_ASSETS: GameAsset[] = [
   },
   {
     id: "wildfire",
-    name: "WildFire Utility",
-    realBasis: "PG&E (PCG)",
+    name: "Wildfire-Exposed Utilities",
+    realBasis: "Peer basket of PG&E, Edison International, Sempra, Hawaiian Electric and other western US utilities in wildfire-prone service territories",
     assetClass: "thematic",
-    sector: "US Utility / Climate Risk",
-    description: "A major US utility operating in wildfire-prone California. Climate-driven extreme weather is an existential threat to its business model.",
+    sector: "US Utility / Climate Risk (Diversified)",
+    description: "A basket of western US utilities with material wildfire exposure in their service territories. Climate-driven extreme weather is an existential risk to the business model across the constituents.",
     riskLevel: "very-high",
     startPrice: 100,
-    // PCG: ~$56→$66→$48→$9→$12→$12→$17→$18
-    roundPrices: [20, 22, 22, 26, 30, 34],
+    // Basket path shaped by PG&E 2018-19 bankruptcy but softened by non-PG&E constituents
+    roundPrices: [57, 62, 69, 76, 100, 115],
     lockRounds: 0,
     minAllocation: 1_000_000,
     valuation: { tier: "Mid", marketCapBn: 10, peRatioProxy: 9, dividendYieldPct: 0 },
     transitionThesis:
-      "Included to make physical climate risk concrete: a utility whose business model is directly threatened by climate-driven wildfire — the cost side of a warming world.",
-    riskProfile: "Speculative",
+      "Included to make physical climate risk concrete: a basket of utilities whose business models are directly threatened by climate-driven wildfire — the cost side of a warming world.",
+    riskProfile: "High",
     keyRisks: [
-      "Catastrophic wildfire liabilities",
-      "Bankruptcy and restructuring history",
-      "Regulatory and litigation overhang",
+      "Catastrophic wildfire liabilities across the basket",
+      "Bankruptcy and restructuring history in the largest constituent",
+      "Regulatory and litigation overhang across the sector",
     ],
     historicalNotes: [
       { round: 1, event: "Wildfire liabilities force a bankruptcy filing" },
@@ -698,19 +715,19 @@ export const ROUND_BRIEFINGS: RoundBriefingWithNews[] = [
       "April 2020: oil prices go negative for the first time in history as storage fills.",
       "The EU approves a €750 billion recovery programme with a 37% climate spending floor.",
       "ESG funds outperform conventional funds during the crash, attracting enormous attention.",
-      "Global Clean Energy Index returns +142% for the year as clean-energy valuations turn parabolic.",
-      "A leading EV maker joins the Broad Market Index, triggering $154 billion of rebalancing trades.",
+      "Clean-energy valuations turn parabolic across most listed climate baskets as capital chases the recovery theme.",
+      "A high-profile EV name joins the Broad Market Index in a large rebalancing event, pulling the wider EV basket higher.",
       "Green-bond issuance tops $270 billion globally, setting a new record.",
     ],
     keyQuestion: "Are clean energy valuations justified by the green recovery, or is this a bubble forming?",
     videoScript:
-      "An extraordinary year. The pandemic wipes thirty-four percent off broad equity markets in twenty-three trading days, and oil briefly trades below zero. Governments respond with green recovery packages: the EU alone earmarks more than a third of seven hundred and fifty billion euros for climate. The Global Clean Energy Index returns one hundred and forty-two percent. A leading EV maker joins the broad market index in one of the largest rebalancing events on record. Valuations are stretched. Decide whether the green recovery justifies the price, or whether you are watching a bubble form.",
+      "An extraordinary year. The pandemic wipes thirty-four percent off broad equity markets in twenty-three trading days, and oil briefly trades below zero. Governments respond with green recovery packages: the EU alone earmarks more than a third of seven hundred and fifty billion euros for climate. Clean-energy valuations turn parabolic across most listed climate baskets, with sector indices posting some of their largest annual gains on record. A high-profile EV name joins the broad market index in a large rebalancing event. Valuations are stretched. Decide whether the green recovery justifies the price, or whether you are watching a bubble form.",
     newsHeadlines: [
       "BREAKING: WTI crude futures crash to -$37.63/barrel — negative for first time",
       "Broad Market Index plunges 34% in 23 trading days as COVID-19 shuts the global economy",
       "EU approves €750bn recovery programme — 37% earmarked for climate",
-      "Leading EV maker joins Broad Market Index — $154bn rebalancing trade",
-      "Global Clean Energy Index returns +142% in 2020",
+      "Leading EV maker joins Broad Market Index in one of the largest rebalancing trades on record",
+      "Clean-energy indices post historic annual gains as capital chases the theme",
       "Solar-equipment shares surge as residential demand and low rates ignite a rally",
       "US election winner pledges to rejoin Paris Agreement on day one",
       "Green-bond issuance tops $270bn globally — shattering the previous record",

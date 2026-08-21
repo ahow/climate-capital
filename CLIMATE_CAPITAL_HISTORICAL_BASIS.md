@@ -19,33 +19,76 @@ This brief maps the six-round Climate Capital simulation to its underlying compa
 
 The game uses one `roundPrices` entry per round. `startPrice` is the value immediately before Round 1; `roundPrices[0]` is the end-of-Round-1 / start-of-Round-2 price; and `roundPrices[5]` is the mid-2026 end-of-Round-6 settlement price. This matches the client and server helpers: a player buying in Round *n* pays the prior round's end price, and the portfolio is marked at `roundPrices[n - 1]` after the round. The six entries therefore preserve each meaningful period-end move and add a realisable final mid-2026 mark.
 
-## 2. Asset price paths
+## 2. Basket construction and asset price paths
 
-| In-game asset | Real-world basis | R1 end 2019 | R2 end 2020 | R3 end 2021 | R4 end 2022 | R5 end 2024 | R6 end mid-2026 | Final-period rationale |
-|---|---|---:|---:|---:|---:|---:|---:|---|
-| ElectraDrive | Tesla (TSLA) | $174 | $1,470 | $2,202 | $770 | $2,524 | $2,000 | China competition and political exposure soften the end mark. |
-| SolarPeak Inverters | Enphase Energy (ENPH) | $744 | $4,999 | $5,212 | $7,549 | $3,765 | $3,200 | Residential-solar softness and tariffs keep pressure on margins. |
-| Nordic Wind Power | Ørsted | $194 | $314 | $186 | $129 | $86 | $55 | 2025 rights issue and project stress extend the offshore-wind drawdown. |
-| HydroGen Systems | Plug Power | $150 | $1,607 | $1,338 | $586 | $213 | $140 | Cash burn and dilution keep the commercial-hydrogen thesis constrained. |
-| NextGen Utilities | NextEra Energy | $235 | $270 | $336 | $318 | $231 | $285 | AI data-centre load supports utility-scale clean-power demand. |
-| Titan Petroleum | ExxonMobil | $85 | $41 | $70 | $135 | $126 | $135 | Moderate oil environment and buybacks provide a steady end mark. |
-| Appalachian Coal | Peabody Energy | $92 | $24 | $101 | $265 | $247 | $220 | Coal softens from crisis highs but energy security limits the decline. |
-| AutoEmissions AG | Volkswagen | $122 | $120 | $182 | $104 | $82 | $78 | China competition and a difficult EV transition continue to weigh. |
-| Global Clean Energy Index | iShares Global Clean Energy ETF (ICLN) | $119 | $287 | $215 | $202 | $158 | $175 | Recovery reflects power-demand growth despite policy risk. |
-| ESG Leaders Index | S&P 500 ESG Index | $186 | $237 | $312 | $257 | $320 | $385 | Broad equity and AI-led gains dominate the result. |
-| Broad Market Index | S&P 500 | $158 | $184 | $233 | $188 | $288 | $355 | AI-led equity strength continues into the final mark. |
-| Global Green Bond Fund | Bloomberg Green Bond Index | $114 | $128 | $118 | $92 | $101 | $108 | Rates stabilise and allow a modest recovery. |
-| Transition-Linked Note | Enel sustainability-linked bond | $108 | $115 | $108 | $88 | $96 | $102 | Credit remains resilient as the issuer retains ESG-market access. |
-| North Sea Wind Fund | Hornsea-style offshore-wind project | $130 | $145 | $155 | $130 | $105 | $95 | Further cost pressure and cancelled capacity lower value. |
-| Sunbelt Solar Portfolio | US utility-scale solar portfolio | $142 | $160 | $172 | $158 | $150 | $148 | Tariffs offset otherwise stable operating cash flows. |
-| GreenBridge Infrastructure | Brookfield Renewable Partners | $234 | $422 | $361 | $265 | $266 | $310 | Large technology PPAs boost the renewable-infrastructure outlook. |
-| EU Carbon Allowances | EU ETS (EUA) | $364 | $408 | $655 | $1,166 | $933 | $1,050 | Allowance prices settle broadly in the €70–80 range. |
-| Premium Carbon Credits | Gold Standard / high-integrity VCM | $114 | $136 | $164 | $218 | $182 | $195 | Quality-flight demand supports independently validated credits. |
-| Standard Carbon Credits | Generic Verra REDD+ credits | $120 | $92 | $158 | $315 | $185 | $155 | Integrity concerns continue to pressure generic credits. |
-| Natural Capital Fund | Natural-capital private fund | $102 | $105 | $108 | $103 | $100 | $102 | Long-horizon assets remain near cost while value creation matures. |
-| PlantProtein Co | Beyond Meat | $100 | $165 | $86 | $16 | $12 | $8 | Falling revenue and continuing losses leave material going-concern risk. |
-| WildFire Utility | PG&E | $20 | $22 | $22 | $26 | $30 | $34 | Improved earnings and wildfire mitigation support a modest recovery. |
-| Frontier Carbon Removal | Climeworks direct-air-capture technology | $100 | $95 | $92 | $100 | $115 | $105 | Mammoth underperformance reinforces the cost and scale challenge. |
+### Why baskets rather than single names
+
+An earlier version of this simulation used one representative single company for each listed-equity asset (for example Tesla for the EV proxy, Enphase for the solar equipment proxy). Single names produced idiosyncratic extremes — most notably a fifteen-fold Tesla path — that risked teaching the wrong lesson: that broad thematic conviction was rewarded when in fact one or two constituents did most of the work. Listed-equity assets have therefore been reformulated as diversified sector baskets. Private funds (offshore wind project, utility-scale solar portfolio, renewable-infrastructure fund, natural-capital fund, direct-air-capture technology) remain single-vehicle exposures because they are already portfolio structures at source.
+
+Each basket is proxied by a specific ETF or a peer average where no clean ETF exists over the full 2015 – mid-2026 window. Round-end index levels compound the underlying ETF or peer annual total returns from base 100 at the start of Round 1.
+
+### 2a. Basket compositions and proxies
+
+| In-game asset | Basket / proxy | Representative constituents |
+|---|---|---|
+| Global EV Leaders | KraneShares Electric Vehicles ETF (KARS) plus peer approximation pre-2019 | Tesla, BYD, Li Auto, NIO, XPeng, Rivian, Lucid |
+| Solar Equipment Leaders | Invesco Solar ETF (TAN) | Enphase, SolarEdge, First Solar, Sunrun, Array Technologies, Nextracker |
+| Global Wind Energy Basket | First Trust Global Wind Energy ETF (FAN) | Ørsted, Vestas, Siemens Energy, RWE, Iberdrola, EDP Renováveis |
+| Hydrogen Economy Basket | Peer basket pre-2021 / Global X Hydrogen ETF (HYDR) post-2021 | Plug Power, Ballard, Bloom Energy, Nel, ITM Power, Linde |
+| Clean Utility Leaders | S&P 500 Utilities Sector Index proxy | NextEra, AES, Xcel, Southern, Consolidated Edison, Duke |
+| Integrated Oil Majors | Energy Select Sector SPDR (XLE) | ExxonMobil, Chevron, Shell, TotalEnergies, BP, Equinor |
+| Coal Producers Basket | VanEck Coal ETF (KOL, closed Dec 2020) plus peer average | Peabody, Arch Resources, Consol Energy, Alliance Resource Partners, Warrior Met Coal |
+| Legacy Auto Basket | Peer average of listed legacy auto | Volkswagen, Ford, GM, Stellantis, Toyota, Honda, Hyundai |
+| Global Clean Energy Index | iShares Global Clean Energy ETF (ICLN) | Approximately 100 global clean-energy names |
+| ESG Leaders Index | S&P 500 ESG Index | Approximately 300 US large-cap ESG-screened names |
+| Broad Market Index | S&P 500 (total return) | 500 US large caps |
+| Global Green Bond Fund | Bloomberg Green Bond Index | Approximately 900 global labelled green bonds |
+| Transition-Linked Note | Enel-style sustainability-linked bond | Coupon steps up on missed emissions targets |
+| Alternative Protein Basket | Peer basket of listed alt-protein / plant-based food | Beyond Meat, Oatly, Vital Farms, and other listed alt-protein names |
+| Wildfire-Exposed Utilities | Peer basket of Western US utilities | PG&E, Edison International, Sempra, Hawaiian Electric |
+
+Private funds (North Sea Wind Fund, Sunbelt Solar Portfolio, GreenBridge Infrastructure, Natural Capital Fund, Frontier Carbon Removal) are single-vehicle exposures and are unchanged.
+
+### 2b. Round-end price paths (base 100 at start of Round 1)
+
+| In-game asset | R1 end 2019 | R2 end 2020 | R3 end 2021 | R4 end 2022 | R5 end 2024 | R6 end mid-2026 | Final-period rationale |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Global EV Leaders | $148 | $253 | $315 | $191 | $145 | $229 | Global EV cycle recovers on lower rates and China stimulus. |
+| Solar Equipment Leaders | $108 | $362 | $271 | $257 | $117 | $197 | 2025 rebound after two years of policy and tariff pain. |
+| Global Wind Energy Basket | $121 | $194 | $172 | $149 | $132 | $176 | European wind auction reset and easing rates lift the basket. |
+| Hydrogen Economy Basket | $120 | $478 | $239 | $108 | $26 | $27 | Cash burn and dilution keep the whole basket depressed. |
+| Clean Utility Leaders | $168 | $167 | $196 | $199 | $227 | $289 | AI data-centre load supports utility-scale clean-power demand. |
+| Integrated Oil Majors | $116 | $78 | $120 | $197 | $207 | $290 | Buybacks and disciplined capex keep energy majors well bid. |
+| Coal Producers Basket | $113 | $79 | $205 | $574 | $342 | $325 | Coal softens from crisis highs but energy security limits the decline. |
+| Legacy Auto Basket | $113 | $107 | $150 | $105 | $71 | $67 | China competition and difficult EV transitions continue to weigh. |
+| Global Clean Energy Index | $133 | $321 | $245 | $232 | $137 | $227 | Recovery reflects power-demand growth despite policy risk. |
+| ESG Leaders Index | $175 | $223 | $292 | $242 | $360 | $458 | Broad equity and AI-led gains dominate the result. |
+| Broad Market Index | $172 | $204 | $262 | $215 | $339 | $451 | AI-led equity strength continues into the final mark. |
+| Global Green Bond Fund | $114 | $124 | $118 | $85 | $89 | $97 | Rates stabilise and allow a modest recovery. |
+| Transition-Linked Note | $112 | $120 | $118 | $100 | $109 | $115 | Credit remains resilient as the issuer retains ESG-market access. |
+| North Sea Wind Fund | $130 | $145 | $155 | $130 | $105 | $95 | Further cost pressure and cancelled capacity lower value. |
+| Sunbelt Solar Portfolio | $142 | $160 | $172 | $158 | $150 | $148 | Tariffs offset otherwise stable operating cash flows. |
+| GreenBridge Infrastructure | $234 | $422 | $361 | $265 | $266 | $310 | Large technology PPAs boost the renewable-infrastructure outlook. |
+| EU Carbon Allowances | $248 | $298 | $745 | $708 | $482 | $556 | Allowance prices settle broadly in the €70–80 range after the 2023 – 24 reset. |
+| Premium Carbon Credits | $123 | $141 | $183 | $211 | $199 | $219 | Quality-flight demand supports independently validated credits. |
+| Standard Carbon Credits | $122 | $115 | $185 | $259 | $149 | $121 | Integrity concerns continue to pressure generic credits. |
+| Natural Capital Fund | $102 | $105 | $108 | $103 | $100 | $102 | Long-horizon assets remain near cost while value creation matures. |
+| Alternative Protein Basket | $130 | $214 | $139 | $21 | $10 | $6 | Falling revenue and continuing losses across the basket. |
+| Wildfire-Exposed Utilities | $57 | $62 | $69 | $76 | $100 | $115 | PG&E recovery lifts the basket from the 2018 – 19 lows. |
+| Frontier Carbon Removal | $100 | $95 | $92 | $100 | $115 | $105 | Mammoth underperformance reinforces the cost and scale challenge. |
+
+### 2c. Basket sources
+
+- KraneShares Electric Vehicles ETF ([KARS](https://kraneshares.com/etf/kars/))
+- Invesco Solar ETF ([TAN](https://portfolioslab.com/symbol/TAN))
+- First Trust Global Wind Energy ETF ([FAN](https://portfolioslab.com/symbol/FAN))
+- iShares Global Clean Energy ETF ([ICLN](https://www.ishares.com/us/products/239738/ishares-global-clean-energy-etf))
+- Energy Select Sector SPDR ([XLE](https://www.alphacubator.com/analysis/XLE))
+- VanEck Coal ETF ([KOL, delisted December 2020](https://www.vaneck.com/us/en/investments/coal-etf-kol/))
+- Global X Hydrogen ETF ([HYDR, launched 2021](https://www.globalxetfs.com/funds/hydr/))
+- S&P 500 and S&P 500 ESG Index total returns ([S&P Dow Jones Indices](https://www.spglobal.com/spdji/en/indices/equity/sp-500-esg-index/#overview))
+- Bloomberg MSCI Global Green Bond Index ([Bloomberg](https://www.bloomberg.com/professional/products/indices/green-bond-indices/))
+- EU ETS EUA prices ([ICAP](https://icapcarbonaction.com/en/ets/eu-emissions-trading-system-eu-ets))
 
 ## 3. Round-by-round narrative and factual basis
 
@@ -55,7 +98,7 @@ Paris set the political direction in December 2015, but asset markets initially 
 
 ### Round 2 — Pandemic and Green Euphoria *(2020)*
 
-COVID produced the fastest modern market crash and briefly negative WTI prices, followed by enormous monetary and fiscal support. The EU's NextGenerationEU recovery programme applied a 37% climate-spending floor. Clean-energy and EV valuations became extreme: ICLN returned 142% in 2020 while Tesla's December broad-index inclusion triggered an estimated $154 billion rebalancing event ([S&P Dow Jones Indices](https://www.spglobal.com/spdji/en/documents/index-news-and-announcements/20201116-500-tsla.pdf)). The round is designed to separate a legitimate transition tailwind from the price paid for it.
+COVID produced the fastest modern market crash and briefly negative WTI prices, followed by enormous monetary and fiscal support. The EU's NextGenerationEU recovery programme applied a 37% climate-spending floor. Clean-energy valuations became extreme across the sector, with the diversified ICLN ETF returning approximately 141% in 2020 and the Invesco Solar ETF (TAN) returning approximately 234% ([S&P Dow Jones Indices](https://www.spglobal.com/spdji/en/documents/index-news-and-announcements/20201116-500-tsla.pdf)). Within those baskets the range was extreme — the EV basket rose approximately 71% for the year, but with Tesla contributing most of the move — a dispersion that mattered for anyone concentrating conviction in single names. The round is designed to separate a legitimate transition tailwind from the price paid for it.
 
 ### Round 3 — Peak Euphoria and Net Zero Pledges *(2021)*
 
